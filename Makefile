@@ -4,7 +4,7 @@ BIN='oc8'
 usesdl: src/chip8.c src/io_sdl.c src/main.c
 	$(CC) -o $(BIN) -DUSE_SDL src/chip8.c src/io_sdl.c src/main.c -lSDL2 
 
-usencurses: src/chip8.c src/io_ncurses.ca src/main.c
+usencurses: src/chip8.c src/io_ncurses.c src/main.c
 	$(CC) -o $(BIN) -DUSE_NCURSES src/chip8.c src/io_ncurses.c src/main.c -lncurses
 
 dos: 

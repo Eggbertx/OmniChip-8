@@ -8,7 +8,7 @@ Supported platforms
  * Linux (SDL)
  
 ### Planned
- * Linux (SDL)
+ * Linux (ncurses)
  * OS X (SDL/ncurses)
  * BSD (SDL/ncurses)
  * Windows/Cygwin (SDL/ncurses)

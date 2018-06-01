@@ -1,3 +1,5 @@
-CHIP8-DOS/
 games/
+.vscode/
 oc8
+oc8.exe
+dumps/

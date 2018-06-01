@@ -1,10 +1,16 @@
-#include "io.h"
-#include "chip8.h"
 #include <stdio.h>
+#include <SDL2/SDL.h>
 
-unsigned char FULLSCREEN = 0;
+#include "io.h"
+#include "cpu.h"
+
+
+uchar FULLSCREEN = 0;
+SDL_Renderer *renderer;
+SDL_Window *screen;
+SDL_Texture *texture;
 	
-unsigned char initScreen() {
+uchar initScreen() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	if(FULLSCREEN) {
 		screen = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
@@ -17,6 +23,9 @@ unsigned char initScreen() {
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
 	int y = 1;
 	int x = 0;
+
+	/*
+	// testing drawChar function
 	for(int i=0;i<16;i++) {
 		if(x*5+5 >= 64) {
 			y += 6;
@@ -24,24 +33,46 @@ unsigned char initScreen() {
 		} 
 		drawChar(i,1+x*5,y);
 		flipScreen();
-		SDL_Delay(100);
+		SDL_Delay(1);
 		x++;
 	}
-	
-	SDL_Event e;
-	while(SDL_WaitEvent(&e)) {
-		if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) return 1;
-		else if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE) return 1;
-	}
-	return 1;
-}
-
-unsigned char initAudio() {
+	*/
+	flipScreen();
 	return 0;
 }
 
-void drawPixel(unsigned char x, unsigned char y) {
+uchar getEvent() {
+	SDL_Event e;
+	SDL_PollEvent(&e);
+	switch(e.type) {
+		case SDL_KEYDOWN:
+			if(e.key.keysym.sym == SDLK_ESCAPE) {
+				printf("Received Escape key, exiting normally.\n");
+				printf("cpu.memory bytes:\n");
+				printBytes(cpu.memory, 4096, "cpu-memory");
+				return 1;
+			}
+		break;
+
+		case SDL_WINDOWEVENT:
+			if(e.window.event == SDL_WINDOWEVENT_CLOSE)
+				return 1;
+		break;
+
+		default:
+			return 0;
+		break;
+	}
+	return 0;
+}
+
+uchar initAudio() {
+	return 0;
+}
+
+void drawPixel(uchar x, uchar y) {
 	SDL_RenderDrawPoint(renderer, x, y);
+	flipScreen();
 }
 
 void flipScreen() {

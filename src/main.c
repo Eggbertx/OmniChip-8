@@ -1,18 +1,28 @@
 #include <stdio.h>
-#include "chip8.h"
+#include "cpu.h"
 #include "io.h"
 
 
-void usage(char* this) {
-	printf("oc8: usage: oc8 [rompath]\n");
-}
-
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
-		usage(argv[0]);
+		printf("usage: %s rompath\n", argv[0]);
 		return 1;
 	}
-	initScreen();
+	if(initScreen() > 0) {
+		printf("ERROR: Unable to init screen.\n");
+		return 2;
+	}
+
+	if(initAudio() > 0) {
+		printf("ERROR: Unable to init audio.\n");
+		return 2;
+	}
+		
 	initChip8(argv[1]);
+
+	if(runCycles() > 0) {
+		printf("ERROR: unknown opcode!");
+		return 1;
+	}
 	return 0;
 }

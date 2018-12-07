@@ -1,13 +1,20 @@
+#include <stdarg.h>
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <curses.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include "io.h"
 #include "cpu.h"
 
 #define PIXEL_CHAR "#"
 struct winsize max;
+WINDOW* debugWindow;
+struct termios old_tio;
+struct termios new_tio;
 
 uchar initScreen() {
 	ioctl(0, TIOCGWINSZ, &max); // get console size to make sure the console is big enough
@@ -18,24 +25,27 @@ uchar initScreen() {
 	}
 
 	initscr();
-	timeout(-1); // timeout() sets blocking or non blocking
-	//keypad(stdscr, 1);
+	// keypad(stdscr, 1);
 	nodelay(stdscr, 1);
-	noecho();
-	curs_set(0); // hide cursor
-	int y = 1;
-	int x = 0;
-	// testing drawChar function
-	for(int i=0;i<16;i++) {
-		if(x*5+5 >= 113) {
-			y += 6;
-			x = 0;
-		} 
-		drawChar(i,1+x*5,y);
-		flipScreen();
+	unsigned char c;
+	
+	tcgetattr(STDIN_FILENO,&old_tio);
+	new_tio=old_tio;
+	new_tio.c_lflag &=(~ICANON & ~ECHO);
+	tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
 
-		x++;
+
+
+	noecho();
+	// setvbuf(stdin, NULL, _IONBF, 0); 
+	curs_set(0); // hide cursor
+
+	if(max.ws_col > SCREEN_WIDTH+30) {
+		// area for drawing debug info if the screen is large enough
+		// debugWindow = newwin(SCREEN_HEIGHT-2, 28, 1, SCREEN_WIDTH+1);
+		debugWindow = newwin(64, 64, 20, 20);
 	}
+
 	return 0;
 }
 
@@ -52,21 +62,103 @@ uchar initAudio() {
 }
 
 uchar getEvent() {
-	int key = getch();
-	switch(key) {
-		case KEY_Q:
-			quit(0);
-		break;
-			
+	int ch = getch();
+	uchar event = 0;
+	// printf("ch = %d\n", ch);
+	switch(ch) {
+		case 27:
+			event = EVENT_ESCAPE;
+			cleanup();
+			exit(0);
+			break;
+		default:
+			// ungetch(ch);
+			break;
 	}
-	return 0;
+	mvprintw(0,65,"ch = %d\n",ch);
+	return event;
 }
 
- void drawPixel(uchar x, uchar y) {
-	 mvprintw(y, x, PIXEL_CHAR);
- }
+schar getKey() {
+	int ch = -1;
+	int key = -1;
 
-void quit(uchar exit_code) {
+	ch = getch();
+	switch(ch) {
+		case '1':
+			key = 0x01;
+			break;
+		case '2':
+			key = 0x02;
+			break;
+		case '3':
+			key = 0x03;
+			break;
+		case '4':
+			key = 0x0C;
+			break;
+		case 'q':
+			key = 0x04;
+			break;
+		case 'w':
+			key = 0x05;
+			break;
+		case 'e':
+			key = 0x06;
+			break;
+		case 'r':
+			key = 0x0D;
+			break;
+		case 'a':
+			key = 0x07;
+			break;
+		case 's':
+			key = 0x08;
+			break;
+		case 'd':
+			key = 0x09;
+			break;
+		case 'f':
+			key = 0x0E;
+			break;
+		case 'z':
+			key = 0x0A;
+			break;
+		case 'x':
+			key = 0x00;
+			break;
+		case 'c':
+			key = 0x0B;
+			break;
+		case 'v':
+			key = 0x0F;
+			break;
+		default:
+			ungetch(ch);
+			break;
+	}
+	return key;
+}
+
+void delay(ushort milliseconds) {
+
+}
+
+void drawPixel(uchar x, uchar y) {
+	mvprintw(y, x, "#");
+}
+
+void addrInfo(char* format, ...) {
+	va_list args;
+
+	va_start(args, format);
+	mvwprintw(debugWindow, 0, 0, "debugBuffer");
+	va_end(args);
+	wrefresh(debugWindow);
+	
+}
+
+void cleanup() {
+	tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
 	endwin();
-	exit(exit_code);
 }

@@ -2,18 +2,22 @@
 
 #ifndef CHIP8_H
 #define CHIP8_H
-/*
- * Based on documentation from the CHIP8 emulator by David Winter (HPMANIAC).
- * Several comments are ripped straight from CHIP8.DOC
- * so I donn't have to go back and forth
- */
-#define START_ADDR 0x200
 
-#ifdef __uint8_t_defined
+#define FONT_START_ADDR 0x050
+#define FONT_END_ADDR 0X0A0
+#define ROM_START_ADDR 0x200
+#define ROM_END_ADDR 0xFFF // 4096
+
+#if defined(UINT8_MAX)
 	typedef uint8_t uchar;
 	typedef int8_t schar;
 	typedef uint16_t ushort;
 	typedef int16_t sshort;
+#elif defined(INT_LEAST8_MAX)
+	typedef uint_least8_t uchar;
+	typedef int_least8_t schar;
+	typedef uint_least16_t ushort;
+	typedef int_least16_t sshort;
 #else
 	typedef unsigned char uchar;
 	typedef signed char schar;
@@ -21,57 +25,70 @@
 	typedef signed short sshort;
 #endif
 
-struct Chip8 {
+#define CPU_CHIP8 0
+#define CPU_SUPERCHIP8 1
+#define CPU_MEGACHIP8 2
+
+#define STATUS_STOPPED 0
+#define STATUS_RUNNING 1
+#define STATUS_PAUSED 2
+
+struct Chip8CPU {
 	uchar type; // chip8, superchip8, megachip8
-	uchar running;
-	uchar *romBytes;
-	uchar V[16];		// registers: V[0xF] is used as carry (when using arithmetic instructions) 
-						// and collision detector (when drawing sprites).
-	ushort PC;			// program counter
+	uchar status;
+	uchar* romBytes;
+	uchar romSize;
+	uchar V[16];		// registers: VF is used as carry for arithmetic and sprite collisions
+	ushort PC;
 	ushort I;			// address register
 	uchar delayTimer;	// generally used to make delay loops
 	uchar soundTimer;	// speaker will beep while non zero
 						// both timers down-count about 60 times per second when non-zero.
 	uchar drawFlag;		// if true, run draw function, this will likely be replaced later
 
-	uchar stack[16];	// 16 levels, allowing 16 successive subroutine calls
+	uchar stack[16];
 	uchar stackPointer;
 	uchar memory[4096];	// 4 KB, font located at 0x8110
 	
-	ushort opcode;		// current opcode
+	ushort opcode;
 	uchar key[16];
-	uchar screen[64][32]; 
-	
+	schar currentKey;
+	uchar screen[64 * 32]; 
 	// All drawings are done in XOR mode. 
-	// When one or more pixels are erased while a sprite is drawn, V[F] register is set to 1, otherwise 0.
 };
 
 
-const uchar font[16][5];
+uchar font[80];
 
-typedef struct Chip8 Chip8CPU;
-
-Chip8CPU cpu;
+struct Chip8CPU cpu;
 
 uchar initChip8(char* rom);
 
-void printBytes(uchar* bytes, ushort filesize, uchar* filename);
+void dumpBytes(uchar* bytes, short filesize, char* filename);
 
-uchar runCycles();
+void printBytes(int num);
+
+void printStatus();
+
+// void addrInfo(char* format, ...);
+
+uchar runCycles(uchar printdebug);
 
 void clearDisplay();
 
-void draw(unsigned char x, unsigned char y);
+void setPixel(uchar x, uchar y);
 
-void drawChar(unsigned char c, unsigned char x, unsigned char y);
+void drawChar(uchar c, uchar x, uchar y);
 
-ushort getOpcode(unsigned short address); 
+void drawSprite(uchar height, uchar x, uchar y);
 
-void sendKey(unsigned char key);
+void drawScreen();
+
+ushort getOpcode(); 
+
+void sendKey(uchar key);
 
 void togglePause();
-
-
 
 void reset();
 

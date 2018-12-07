@@ -3,3 +3,7 @@ games/
 oc8
 oc8.exe
 dumps/
+.vs/
+build/
+packages/
+OmniChip-8.vcxproj.user*

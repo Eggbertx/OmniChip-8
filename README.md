@@ -5,12 +5,13 @@ A Chip-8 emulator with heavy emphasis on being as cross-platform as humanly poss
 Supported platforms
 ------ 
 ### Partial
- * Linux/Windows/macOS (maybe)/BSD (maybe) - SDL
- * Linux/macOS (maybe)/BSD (maybe) - ncurses
+ * Desktop SDL
+ * curses
  
 ### Planned
- * Cygwin (ncurses)
  * MS-DOS/FreeDOS/DR-DOS
  * Commodore 64
  * Apple ][
  * NES (maybe)
+ * TI-8x
+ * 

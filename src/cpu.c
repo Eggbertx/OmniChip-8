@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,291 +7,406 @@
 #include "io.h"
 
 
-const uchar font[16][5] = { 
-	{0xF0, 0x90, 0x90, 0x90, 0xF0}, // 0
-	{0x20, 0x60, 0x20, 0x20, 0x70}, // 1
-	{0xF0, 0x10, 0xF0, 0x80, 0xF0}, // 2
-	{0xF0, 0x10, 0xF0, 0x10, 0xF0}, // 3
-	{0x90, 0x90, 0xF0, 0x10, 0x10}, // 4
-	{0xF0, 0x80, 0xF0, 0x10, 0xF0}, // 5
-	{0xF0, 0x80, 0xF0, 0x90, 0xF0}, // 6
-	{0xF0, 0x10, 0x20, 0x40, 0x40}, // 7
-	{0xF0, 0x90, 0xF0, 0x90, 0xF0}, // 8
-	{0xF0, 0x90, 0xF0, 0x10, 0xF0}, // 9
-	{0xF0, 0x90, 0xF0, 0x90, 0x90}, // A
-	{0xE0, 0x90, 0xE0, 0x90, 0xE0}, // B
-	{0xF0, 0x80, 0x80, 0x80, 0xF0}, // C
-	{0xE0, 0x90, 0x90, 0x90, 0xE0}, // D
-	{0xF0, 0x80, 0xF0, 0x80, 0xF0}, // E
-	{0xF0, 0x80, 0xF0, 0x80, 0x80}  // F
+uchar font[80] = {
+	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+	0x20, 0x60, 0x20, 0x20, 0x70, // 1
+	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+	0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+	0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+	0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+	0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+	0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+	0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+	0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+	0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+	0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
-
-void dec2Bin(uchar in, uchar (*out)[5]) {
-	printf(out[3]);
-	for (int i = 1 << 31; i > 0; i = i / 2) {
-		(in & i)? printf("1"): printf("0");
-	}
-	
-}
-
-// I realize this is probably a bad way to do things, I'll fix it later
-char hex2bin[16][4] = {
-	{0,0,0,0},
-	{0,0,0,1},
-	{0,0,1,0},
-	{0,0,1,1},
-	{0,1,0,0},
-	{0,1,0,1},
-	{0,1,1,0},
-	{0,1,1,1},
-	{1,0,0,0},
-	{1,0,0,1},
-	{1,0,1,0},
-	{1,0,1,1},
-	{1,1,0,0},
-	{1,1,0,1},
-	{1,1,1,0},
-	{1,1,1,1}
-};
-
-uchar initChip8(char* rom) {
-	cpu.PC = START_ADDR;
-	load(rom);
-	cpu.running = 1;
-	return 0;
-}
-
-void clearDisplay() {
-	memset(cpu.screen, 0, sizeof(cpu.screen[0][0]*64*32));
-}
-
-void drawChar(uchar c, uchar x, uchar y) {
-	uchar nibble;
-	char charline[5];
-	for(int i=0;i<5;i++)
-		charline[i] = font[c][i]; 
-	
-	for(int ay=0;ay<5;ay++) {
-		nibble = (font[c][ay] >> 4) ;
-		for(int ax=0;ax<4;ax++) {
-			if(hex2bin[nibble][ax] == 1)
-				drawPixel(ax+x,ay+y);
-		}
-	}
-}
-
-ushort getOpcode(ushort pc) {
-	cpu.PC += 2;
-	ushort opcode = cpu.romBytes[cpu.PC] << 8 | cpu.romBytes[cpu.PC + 1];
-	printf("opcode: %#x\n", opcode);
-	return opcode;
-} 
 
 void reset() {
-	cpu.PC = 0;
+	cpu.status = STATUS_RUNNING;
+	cpu.PC = ROM_START_ADDR;
 	srand(time(NULL));
-	memset(cpu.memory, 0, sizeof(uchar)*4096);
-
-	memset(cpu.stack, 0, sizeof(uchar)*16);
-	memset(cpu.V,0,sizeof(uchar)*16);
+	memset(cpu.memory, 0, sizeof(cpu.memory));
+	memset(cpu.stack, 0, sizeof(cpu.stack));
+	memset(cpu.V, 0, sizeof(cpu.V));
+	memset(cpu.key, 0, sizeof(cpu.key));
 	cpu.stackPointer = 0;
 	cpu.I = 0;
 	cpu.delayTimer = 0;
 	cpu.soundTimer = 0;
-	
+	cpu.currentKey = -1;
 }
 
-void printBytes(uchar* bytes, ushort filesize, uchar* filename) {
-	uchar* dumpFileName;
-	sprintf(dumpFileName, "dumps/%s.dmp.txt", filename);
-	FILE* dumpFile = fopen(dumpFileName, "w");
+uchar initChip8(char* rom) {
+	reset();
+	return load(rom);
+}
+
+void clearDisplay() {
+	memset(cpu.screen, 0, 64*32);
+	// clearScreen();
+}
+
+void setPixel(uchar x, uchar y) {
+	if(x > 64) {
+		x -= 64;
+		cpu.V[0xF] = 1;
+	}
+	if(y > 32) {
+		y -= 32;
+		cpu.V[0xF] = 1;
+	}
+	int i = x + (y * 64);
+	cpu.screen[i] ^= 1;
+}
+
+void drawSprite(uchar height, uchar x, uchar y) {
+	int sy;
+	int sx;
+	for(sy = 0; sy < height; sy++) {
+		for(sx = 0; sx < 8; sx++) {
+			if(cpu.memory[cpu.I+sx+sy] != 0) setPixel(x,y);
+		}
+	}
+}
+
+void drawScreen() {
+	int p = 0;
+	for(p = 0; p < 64*32; p++) {
+		if((cpu.screen[p>>3]&(128>>(p&7))) != 0) {
+			int x = p % 64;
+ 			int y = (p - x) / 32;
+			drawPixel(x,y);
+		}
+	}
+	flipScreen();
+}
+
+ushort getOpcode() {
+	ushort opcode = cpu.memory[cpu.PC] << 8 | cpu.memory[cpu.PC + 1];
+	cpu.PC += 2;
+	return opcode;
+} 
+
+void dumpBytes(uchar* bytes, short filesize, char* filename) {
+	int i;
+	FILE* dumpFile;
+	
+	printf("Dumping to %s\n", filename);
+
+	dumpFile = fopen(filename, "w");
 	if(dumpFile == NULL) {
-		printf("Error opening %s\n", dumpFileName);
+		printf("Error opening %s\n", filename);
 		return;
 	}
 
-	for(int i = 0; i < filesize; i++) {
+	for(i = 0; i < filesize; i++) {
 		fprintf(dumpFile, "%02X ", bytes[i]);
-		if((i + 1) % 32 == 0) fprintf(dumpFile, "\n");
+		if((i + 1) % 0x10 == 0) fprintf(dumpFile, "\n");
 	}
+	fclose(dumpFile);
 }
 
+void printStatus() {
+	int r;
+	int s;
 
-uchar runCycles() {
-	ushort nnn = 0; // address
-	uchar x = 0;
-	uchar y = 0;
-	uchar kk = 0; // end byte
+	printf("CPU V registers:\n");
+	for(r = 0; r < 16; r++) {
+		printf("\tV%X: %x\n", r, cpu.V[r]);
+	}
+	printf("Program counter: %d\n", cpu.PC);
+	printf("CPU Address register (cpu.I): %d\n", cpu.I);
+	printf("Delay timer: %d\nSound timer: %d\n", cpu.delayTimer, cpu.soundTimer);
+	printf("cpu.drawFlag: %d\n", cpu.drawFlag);
+	printf("Stack:\n");
+	for(s = 0; s < 16; s++) {
+		printf("\tstack[%d]: %x\n", s, cpu.stack[s]);
+	}
+	printf("Stack pointer: %d\n", cpu.stackPointer);
+}
 
+// void addrInfo(char* format, ...) {
+// 	va_list args;
+
+// 	printf("%#04x: %#04x, ", cpu.PC-2, cpu.opcode);
+// 	va_start(args, format);
+// 	vprintf(format, args);
+// 	va_end(args);
+// 	printf("\n");
+// }
+
+uchar runCycles(uchar printdebug) {
+	uchar x = 0;	// -X--
+	uchar y = 0;	// --Y-
+	ushort nnn = 0;	// -nnn
+	uchar nn = 0;	// --nn
+	uchar n = 0;	// ---n
 	uchar event;
-	reset();
-	drawPixel(3,4);
-	drawPixel(4,4);
-	while(cpu.running) {
+	cpu.currentKey = -1; // -1 if no keys are pressed, otherwise
+
+	while(cpu.status != STATUS_STOPPED) {
 		event = getEvent();
-		if(event == 1) {
-			cpu.running = 0;
+		if(event == EVENT_ESCAPE || event == EVENT_WINDOWCLOSE) {
+			cpu.status = STATUS_STOPPED;
 			return 0;
 		}
-		cpu.opcode = getOpcode(cpu.PC);
-		// Examples
-		nnn = cpu.opcode & 0x0FFF; // addr
+		if(cpu.status == STATUS_PAUSED) {
+			continue;
+		}
+		drawScreen();
+		delay(60);
+
+
+		if(cpu.PC > ROM_END_ADDR) {
+			printf("Program counter (%04X) reached end of file\n", cpu.PC);
+			cpu.status = STATUS_PAUSED;
+			continue;
+		}
+
+		cpu.opcode = (cpu.memory[cpu.PC] << 8) | (cpu.memory[cpu.PC + 1]);
+		cpu.PC += 2;
+
 		x = (cpu.opcode & 0x0F00) >> 8;
 		y = (cpu.opcode & 0x00F0) >> 4;
-		kk = cpu.opcode & 0x00FF;
+
+		nnn = cpu.opcode & 0x0FFF;
+		nn = cpu.opcode & 0x00FF;
+		n = cpu.opcode & 0x000F;
+
+		cpu.currentKey = getKey();
 
 		switch(cpu.opcode & 0xF000) {
 			case 0x0000:
 				if(cpu.opcode == 0x00E0) {
-					// CLS (clear screen)
+					if(printdebug) addrInfo("CLS");
 					clearDisplay();
 				} else if(cpu.opcode == 0x00EE) {
-					// RET (return from subroutine)
-					cpu.PC = cpu.stack[--cpu.stackPointer];
+					if(printdebug) addrInfo("RET");
+					cpu.stackPointer--;
+					cpu.PC = cpu.stack[cpu.stackPointer];
 				} else {
-					// JMP nnn (unused)
+					if(printdebug) addrInfo("SYS %04X", nnn);
+					//goto unsupported_opcode;
 				}
 				break;
 			case 0x1000:
-				// goto nnn (0x1nnn)
-				cpu.PC = cpu.opcode & 0x0FFF;
+				if(printdebug) addrInfo("JP %#04x", nnn);
+				if(nnn == cpu.PC - 2) {
+					if(printdebug) printf("Reached end of program (infinite loop)\n");
+					cpu.status = STATUS_PAUSED;
+					break;
+				}
+				cpu.PC = nnn;
 				break;
 			case 0x2000:
-				// call subroutine at nnn
 				// increment SP, put PC on top of stack, set to nnn
+				if(printdebug) addrInfo("CALL %#04X", nnn);
+				cpu.stack[cpu.stackPointer] = cpu.PC;
 				cpu.stackPointer++;
-				cpu.PC = cpu.opcode & 0x0FFF;
+				cpu.PC = nnn;
 				break;
 			case 0x3000:
-				// ADD Vx, Vy
-				if(cpu.V[x] == (cpu.opcode & 0x00FF)) {
+				if(printdebug) addrInfo("SE V%X, #%x", x, nn);
+				if(cpu.V[x] == nn) {
 					cpu.PC += 2;
 				}
 				break;
 			case 0x4000:
-				if(cpu.V[x] != kk) {
+				if(printdebug) addrInfo("SNE V%X, #%x", x, nn);
+				if(cpu.V[x] != nn) {
 					cpu.PC += 2;
 				}
 				break;
 			case 0x5000:
-				cpu.V[x] = (cpu.opcode & 0x0F00) >> 8;
-				cpu.V[y] = (cpu.opcode & 0x0F00) >> 4;
+			if(printdebug) addrInfo("SE V%X, V%X", x, y);
 				if(cpu.V[x] != cpu.V[y]) cpu.PC += 2;
 				break;
 			case 0x6000:
-				cpu.V[x] = cpu.opcode & 0x00FF;
+				if(printdebug) addrInfo("LD V%X, #%x", x, nn);
+				cpu.V[x] = nn;
 				break;
 			case 0x7000:
-				cpu.V[x] += cpu.opcode & 0x0FF;
+				if(printdebug) addrInfo("ADD V%X, #%x", x, nn);
+				cpu.V[x] += nn;
 				break;
-			case 0x8000:
-				printf("cpu.opcode & 0x000F: %x\n", cpu.opcode & 0x000F);
-				uchar n = cpu.opcode & 0x000F;
-				if(n == 0x0) {
-					// store V[y] in V[x]
+			case 0x8000: {
+				if(n == 0x0000) {
+					if(printdebug) addrInfo("LD V%X, V%X", x, y);
 					cpu.V[x] = cpu.V[y];
-				} else if(n == 0x1) {
-					// V[x] = V[x] or V[y]
+				} else if(n == 0x0001) {
+					if(printdebug) addrInfo("OR V%X, V%X", x, y);
 					cpu.V[x] = cpu.V[x] | cpu.V[y];
-				} else if(n == 0x2) {
-					// V[x] = V[x] and V[y]
+				} else if(n == 0x0002) {
+					if(printdebug) addrInfo("AND V%X, V%X", x, y);
 					cpu.V[x] = cpu.V[x] & cpu.V[y];
-				} else if(n == 0x3) {
-					// V[x] = V[x] xor V[y]
-					cpu.V[x] = cpu.V[x] ^ cpu.V[y];
-				} else if(n == 0x4) {
-					// add V[x] and V[y], if > 255, V[0xF] = 1. V[x] = sum & 0xF
-					int sum = cpu.V[x] + cpu.V[y];
-					cpu.V[0xF] = sum > 0xFF;
+				} else if(n == 0x0003) {
+					if(printdebug) addrInfo("XOR V%X, V%X", x, y);
+					cpu.V[x] ^= cpu.V[y];
+				} else if(n == 0x0004) {
+					ushort sum = 0;
+					if(printdebug) addrInfo("add V%X and V%X, if > 255, VF = 1. V%X = sum & 0xF", x, y, x);
+					sum = cpu.V[x] + cpu.V[y];
+					cpu.V[0xF] = sum > 255;
 					cpu.V[x] = sum & 0xFF;
-				} else if(n == 0x5) {
+				} else if(n == 0x0005) {
 					// Set Vx = Vx - Vy, set VF = NOT borrow.
 					// If Vx > Vy, then VF is set to 1, otherwise 0.
 					// Then Vy is subtracted from Vx, and the results stored in Vx.
-					if(cpu.V[x] > cpu.V[y]) cpu.V[0xF] = 1;
+					if (cpu.V[x] > cpu.V[y]) cpu.V[0xF] = 1;
 					else cpu.V[0xF] = 0;
 					cpu.V[x] -= cpu.V[y];
-				} else if(n == 0x6) {
+				} else if(n == 0x0006) {
+					if(printdebug) addrInfo("Stores the least significant bit of V%X in VF and then shifts V%X to the right by 1", x, x);
+					cpu.V[0xF] = (cpu.V[x] & 1);
+					cpu.V[x] = cpu.V[x] >> 1;
+				} else if(n == 0x0007) {
+					if(printdebug) addrInfo("Sets V%X to V%X minus V%X. VF is set to 0 when there's a borrow, and 1 when there isn't", x, y, x);
 
-				} else if(n == 0x7) {
-
-				} else if(n == 0xE) {
-
+					if(cpu.V[y] > cpu.V[x]) cpu.V[0xF] = 1;
+					else cpu.V[0xF] = 0;
+					cpu.V[x] = cpu.V[y] - cpu.V[x];
+				} else if(n == 0x000E) {
+					if(printdebug) addrInfo("Stores the most significant bit of V%X in VF and then shifts V%X to the left by 1", x, x);
+					cpu.V[0xF] = (cpu.V[x] & 128);
+					cpu.V[x] = cpu.V[x] << 1;
 				} else {
-					printf("Error: Unrecognized 0x8... opcode %#x.\n", cpu.opcode);
-					cpu.running = 0;
-					return 1;
+					goto unrecognized_opcode;
 				}
-				break;
+			}
+			break;
 			case 0x9000:
-				
+				if(cpu.V[x] != cpu.V[y])
+					cpu.PC += 2;
 				break;
 			case 0xA000:
+				if(printdebug) addrInfo("LD I, %#04x", nnn);
 				cpu.I = nnn;
 				break;
 			case 0xB000:
-				cpu.PC = nnn + cpu.V[0];
+				cpu.PC = cpu.V[0] + nnn;
 				break;
 			case 0xC000: {
-				// The interpreter generates a random number from 0 to 255,
-				// which is then ANDed with the value kk. The results are stored in Vx.
+				if(printdebug) addrInfo("RND V%X, #%x", x, nn);
 				uchar rnd = (rand() % 255) + 1;
-				cpu.V[x] = kk & rnd;
+				cpu.V[x] = rnd & nn;
 				break;
 			}
 			case 0xD000:
+				if (printdebug) addrInfo("DRW V%X, V%X, #%x", x, y, n);
+				uchar sx = 0;
+				uchar sy = 0;
 				
+				for(sy = 0; sy < n; sy++) {
+					uchar sprite = cpu.memory[cpu.I + sy];
+					for(sx = 0; sx < 8; sx++) {
+						if((sprite & 128) > 0) {
+							if(x + sx > 64 || y + sy > 32) cpu.V[0xF] = 1;
+							setPixel(sx, sy);
+						}
+					}
+				}
+				// drawSprite(n, x, y);
+
 				break;
 			case 0xE000:
-				
+				if(nn == 0x009E) {
+					if(printdebug) addrInfo("Skip if key in V%X is pressed, not yet fully implemented", x);
+					if(cpu.currentKey > -1 && cpu.V[x] == cpu.currentKey) {
+						cpu.PC += 2;
+					}
+				} else if(nn == 0x00A1) {
+					if(printdebug) addrInfo("Skip if key in V%X is not pressed, not yet fully implemented", x);
+					if(cpu.currentKey > -1 && cpu.V[x] != cpu.currentKey) {
+						cpu.PC += 2;
+					}
+				}
 				break;
-			case 0xF000:
-				if(kk == 0x0055) {
-					// write registers V[0] - V[x] to memory, with cpu.I as the offset
-					for(ushort i = 0; i <= x; i++) {
-						if(cpu.I + i < 4096) cpu.memory[cpu.I + i] = cpu.V[i];
+			case 0xF000: {
+				if(nn == 0x0007) {
+					cpu.V[x] = cpu.delayTimer;
+				} else if(nn == 0x000A) {
+					do {
+						cpu.currentKey = getKey();
+					} while(cpu.currentKey == -1);
+					cpu.V[x] = cpu.currentKey;
+					cpu.PC += 2;
+				} else if(nn == 0x0015) {
+					cpu.delayTimer = cpu.V[x];
+				} else if(nn == 0x0018) {
+					cpu.soundTimer = cpu.V[x];
+				} else if(nn == 0x001E) {
+					cpu.I += cpu.V[x];
+				} else if(nn == 0x0029) {
+					if(printdebug) addrInfo("Set I to the location of the sprite for the character in V%X, not yet implemented", x);
+					//goto unsupported_opcode;
+				} else if(nn == 0x0033) {
+					cpu.memory[cpu.I+0] = (cpu.V[x]/10) % 10;
+					cpu.memory[cpu.I+1] = (cpu.V[x]/100) % 10;
+					cpu.memory[cpu.I+2] = cpu.V[x] % 10;
+				} else if(nn == 0x0055) {
+					if(printdebug) addrInfo("write registers V0 - V%X to memory, with %#04x as the offset", x, cpu.I);
+					ushort i;
+					for(i = 0; i <= x; i++) {
+						cpu.memory[cpu.I + i] = cpu.V[cpu.I + i];
+					}
+				} else if(nn == 0x0065) {
+					ushort i;
+					for(i = 0; i < x; i++) {
+						cpu.V[cpu.I + i] = cpu.memory[cpu.I + i];
 					}
 				}
 				break;
 			default:
-				printf("Error: Unrecognized opcode %#x.\n", cpu.opcode);
-				printBytes(cpu.memory, 4096,"ibm.dmp.txt");
-				cpu.running = 0;
-				return 1;
+				goto unrecognized_opcode;
+			}
 		}
 	}
 	return 0;
+
+	unrecognized_opcode:
+		fprintf(stderr, "Unrecognized opcode: %04x at %04x\n", cpu.opcode, cpu.PC);
+		dumpBytes(cpu.memory, 4096, "dumps/memorybytes_unrecognized.txt");
+		printStatus();
+		cpu.status = STATUS_STOPPED;
+		return 1;
+
+	unsupported_opcode:
+		fprintf(stderr, "Unsupported opcode: %04x at %04x\n", cpu.opcode, cpu.PC);
+		dumpBytes(cpu.memory, 4096, "dumps/memorybytes_unsupported.txt");
+		printStatus();
+		cpu.status = STATUS_STOPPED;
+		return 1;
 }
 
 uchar load(char* file) {
 	FILE *rom_file;
-	long filesize;
+	uchar f = 0;
+	uchar m = 0;
+
 	rom_file = fopen(file, "rb");
 	if(!rom_file) {
-		printf("Error: couldn\'t load file \"%s\"\n", file);
-		exit(1);
+		fprintf(stderr, "Error: couldn\'t load %s\n", file);
 		return 1;
 	}
 	fseek(rom_file, 0L, SEEK_END);
-	filesize = ftell(rom_file);
-	
+	cpu.romSize = ftell(rom_file);
+	printf("Loading %s (%d bytes)\n", file, cpu.romSize);
 	rewind(rom_file);
-	cpu.romBytes=(uchar *)malloc(filesize+1);
-	
-	fread(cpu.romBytes,filesize,1,rom_file);
+
+	cpu.romBytes = (uchar *)malloc(cpu.romSize+1);
+	fread(cpu.romBytes, 1, cpu.romSize,rom_file);
 	fclose(rom_file);
-	free(rom_file);
+
+	for(f = 0; f < 80; f++) {
+		cpu.memory[FONT_START_ADDR + f] = font[f];
+	}
+	for(m = 0; m < cpu.romSize; m++) {
+		cpu.memory[ROM_START_ADDR + m] = cpu.romBytes[m];
+	}
 	return 0;
-}
-
-char* hex2Dec(int hex) {
-	char *dec = malloc(6);
-	sprintf(dec, "%d", hex);
-	return dec;
-}
-
-char* dec2Hex(int dec) {
-	char *hex = malloc(sizeof(uchar) * 4);
-	sprintf(hex, "%0x", dec);
-	return hex;
 }

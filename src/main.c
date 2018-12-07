@@ -5,24 +5,29 @@
 
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
-		printf("usage: %s rompath\n", argv[0]);
-		return 1;
+		fprintf(stderr, "usage: %s rompath\n", argv[0]);
+		return 0;
 	}
+
 	if(initScreen() > 0) {
-		printf("ERROR: Unable to init screen.\n");
-		return 2;
+		fprintf(stderr, "ERROR: Unable to init screen.\n");
+		return 0;
 	}
 
 	if(initAudio() > 0) {
-		printf("ERROR: Unable to init audio.\n");
-		return 2;
+		fprintf(stderr, "ERROR: Unable to init audio.\n");
+		return 0;
 	}
-		
-	initChip8(argv[1]);
 
-	if(runCycles() > 0) {
-		printf("ERROR: unknown opcode!");
-		return 1;
+	if (initChip8(argv[1]) > 0) {
+		fprintf(stderr, "ERROR: Something went wrong while loading %s\n", argv[1]);
+		return 0;
+	};
+
+	if(runCycles(1) > 0) {
+		return 0;
 	}
+
+	cleanup();
 	return 0;
 }

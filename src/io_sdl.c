@@ -94,11 +94,11 @@ void playAudio(void* data, void* stream, int length) {
 
 void drawPixel(uchar x, uchar y) {
 	SDL_RenderDrawPoint(renderer, x, y);
-	// flipScreen();
+	/* flipScreen(); */
 }
 
 void flipScreen() {
-	// SDL_BlitScaled(surface, r, renderer)
+	/* SDL_BlitScaled(surface, r, renderer); */
 	
 	SDL_RenderPresent(renderer);
 }
@@ -115,7 +115,7 @@ void cleanup() {
 void addrInfo(char* format, ...) {
 	va_list args;
 
-	printf("%#04x: %#04x, ", cpu.PC-2, cpu.opcode);
+	printf("0x%04x: %04x, ", cpu.PC-2, cpu.opcode);
 	va_start(args, format);
 	vprintf(format, args);
 	va_end(args);

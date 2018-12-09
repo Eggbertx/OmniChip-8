@@ -8,22 +8,22 @@
 
 
 uchar font[80] = {
-	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-	0x20, 0x60, 0x20, 0x20, 0x70, // 1
-	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-	0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-	0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-	0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-	0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-	0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-	0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-	0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-	0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-	0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+	0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
+	0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
+	0xF0, 0x10, 0xF0, 0x80, 0xF0, /* 2 */
+	0xF0, 0x10, 0xF0, 0x10, 0xF0, /* 3 */
+	0x90, 0x90, 0xF0, 0x10, 0x10, /* 4 */
+	0xF0, 0x80, 0xF0, 0x10, 0xF0, /* 5 */
+	0xF0, 0x80, 0xF0, 0x90, 0xF0, /* 6 */
+	0xF0, 0x10, 0x20, 0x40, 0x40, /* 7 */
+	0xF0, 0x90, 0xF0, 0x90, 0xF0, /* 8 */
+	0xF0, 0x90, 0xF0, 0x10, 0xF0, /* 9 */
+	0xF0, 0x90, 0xF0, 0x90, 0x90, /* A */
+	0xE0, 0x90, 0xE0, 0x90, 0xE0, /* B */
+	0xF0, 0x80, 0x80, 0x80, 0xF0, /* C */
+	0xE0, 0x90, 0x90, 0x90, 0xE0, /* D */
+	0xF0, 0x80, 0xF0, 0x80, 0xF0, /* E */
+	0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
 };
 
 void reset() {
@@ -48,7 +48,7 @@ uchar initChip8(char* rom) {
 
 void clearDisplay() {
 	memset(cpu.screen, 0, 64*32);
-	// clearScreen();
+	/* clearScreen(); */
 }
 
 void setPixel(uchar x, uchar y) {
@@ -130,24 +130,14 @@ void printStatus() {
 	printf("Stack pointer: %d\n", cpu.stackPointer);
 }
 
-// void addrInfo(char* format, ...) {
-// 	va_list args;
-
-// 	printf("%#04x: %#04x, ", cpu.PC-2, cpu.opcode);
-// 	va_start(args, format);
-// 	vprintf(format, args);
-// 	va_end(args);
-// 	printf("\n");
-// }
-
 uchar runCycles(uchar printdebug) {
-	uchar x = 0;	// -X--
-	uchar y = 0;	// --Y-
-	ushort nnn = 0;	// -nnn
-	uchar nn = 0;	// --nn
-	uchar n = 0;	// ---n
+	uchar x = 0;	/* -X-- */
+	uchar y = 0;	/* --Y- */
+	ushort nnn = 0;	/* -nnn */
+	uchar nn = 0;	/* --nn */
+	uchar n = 0;	/* ---n */
 	uchar event;
-	cpu.currentKey = -1; // -1 if no keys are pressed, otherwise
+	cpu.currentKey = -1; /* -1 if no keys are pressed, otherwise */
 
 	while(cpu.status != STATUS_STOPPED) {
 		event = getEvent();
@@ -188,23 +178,22 @@ uchar runCycles(uchar printdebug) {
 				} else if(cpu.opcode == 0x00EE) {
 					if(printdebug) addrInfo("RET");
 					cpu.stackPointer--;
-					cpu.PC = cpu.stack[cpu.stackPointer];
+					cpu.PC = cpu.stack[cpu.stackPointer] + ROM_START_ADDR;
 				} else {
-					if(printdebug) addrInfo("SYS %04X", nnn);
-					//goto unsupported_opcode;
+					if(printdebug) addrInfo("SYS %04X", nnn); /* not used for most "modern" ROMs */
 				}
 				break;
 			case 0x1000:
 				if(printdebug) addrInfo("JP %#04x", nnn);
 				if(nnn == cpu.PC - 2) {
-					if(printdebug) printf("Reached end of program (infinite loop)\n");
+					if(printdebug) printf("Reached infinite loop in CHIP-8 ROM, pausing CPU\n");
 					cpu.status = STATUS_PAUSED;
 					break;
 				}
 				cpu.PC = nnn;
 				break;
 			case 0x2000:
-				// increment SP, put PC on top of stack, set to nnn
+				/* increment SP, put PC on top of stack, set to nnn */
 				if(printdebug) addrInfo("CALL %#04X", nnn);
 				cpu.stack[cpu.stackPointer] = cpu.PC;
 				cpu.stackPointer++;
@@ -254,9 +243,9 @@ uchar runCycles(uchar printdebug) {
 					cpu.V[0xF] = sum > 255;
 					cpu.V[x] = sum & 0xFF;
 				} else if(n == 0x0005) {
-					// Set Vx = Vx - Vy, set VF = NOT borrow.
-					// If Vx > Vy, then VF is set to 1, otherwise 0.
-					// Then Vy is subtracted from Vx, and the results stored in Vx.
+					/* Set Vx = Vx - Vy, set VF = NOT borrow.
+					 * If Vx > Vy, then VF is set to 1, otherwise 0.
+					 * Then Vy is subtracted from Vx, and the results stored in Vx. */
 					if (cpu.V[x] > cpu.V[y]) cpu.V[0xF] = 1;
 					else cpu.V[0xF] = 0;
 					cpu.V[x] -= cpu.V[y];
@@ -310,7 +299,7 @@ uchar runCycles(uchar printdebug) {
 						}
 					}
 				}
-				// drawSprite(n, x, y);
+				/* drawSprite(n, x, y); */
 
 				break;
 			case 0xE000:
@@ -343,7 +332,7 @@ uchar runCycles(uchar printdebug) {
 					cpu.I += cpu.V[x];
 				} else if(nn == 0x0029) {
 					if(printdebug) addrInfo("Set I to the location of the sprite for the character in V%X, not yet implemented", x);
-					//goto unsupported_opcode;
+					goto unsupported_opcode;
 				} else if(nn == 0x0033) {
 					cpu.memory[cpu.I+0] = (cpu.V[x]/10) % 10;
 					cpu.memory[cpu.I+1] = (cpu.V[x]/100) % 10;

@@ -6,7 +6,9 @@
 #define FONT_START_ADDR 0x050
 #define FONT_END_ADDR 0X0A0
 #define ROM_START_ADDR 0x200
-#define ROM_END_ADDR 0xFFF // 4096
+#define ROM_END_ADDR 0xFFF /* 4096 */
+#define CHIP8_MEMORY 4096
+/* #define SCHIP8_MEMORY ? */
 
 #if defined(UINT8_MAX)
 	typedef uint8_t uchar;
@@ -34,29 +36,28 @@
 #define STATUS_PAUSED 2
 
 struct Chip8CPU {
-	uchar type; // chip8, superchip8, megachip8
+	uchar type; /* chip8, superchip8, megachip8 */
 	uchar status;
 	uchar* romBytes;
 	uchar romSize;
-	uchar V[16];		// registers: VF is used as carry for arithmetic and sprite collisions
+	uchar V[16];		/* registers: VF is used as carry for arithmetic and sprite collisions */
 	ushort PC;
-	ushort I;			// address register
-	uchar delayTimer;	// generally used to make delay loops
-	uchar soundTimer;	// speaker will beep while non zero
-						// both timers down-count about 60 times per second when non-zero.
-	uchar drawFlag;		// if true, run draw function, this will likely be replaced later
+	ushort I;			/* address register */
+	uchar delayTimer;	/* generally used to make delay loops */
+	uchar soundTimer;	/* speaker will beep while non zero */
+						/* both timers down-count about 60 times per second when non-zero. */
+	uchar drawFlag;		/* if true, run draw function, this will likely be replaced later */
 
 	uchar stack[16];
 	uchar stackPointer;
-	uchar memory[4096];	// 4 KB, font located at 0x8110
+	uchar memory[4096];	/* 4 KB, font located at 0x8110 */
 	
 	ushort opcode;
 	uchar key[16];
 	schar currentKey;
 	uchar screen[64 * 32]; 
-	// All drawings are done in XOR mode. 
+	/* All drawings are done in XOR mode. */
 };
-
 
 uchar font[80];
 
@@ -66,11 +67,7 @@ uchar initChip8(char* rom);
 
 void dumpBytes(uchar* bytes, short filesize, char* filename);
 
-void printBytes(int num);
-
 void printStatus();
-
-// void addrInfo(char* format, ...);
 
 uchar runCycles(uchar printdebug);
 
@@ -78,24 +75,14 @@ void clearDisplay();
 
 void setPixel(uchar x, uchar y);
 
-void drawChar(uchar c, uchar x, uchar y);
-
 void drawSprite(uchar height, uchar x, uchar y);
 
 void drawScreen();
 
 ushort getOpcode(); 
 
-void sendKey(uchar key);
-
-void togglePause();
-
 void reset();
 
 uchar load(char* file);
-
-char* decToHex(int dec);
-
-char* hexToDec(int hex);
 
 #endif

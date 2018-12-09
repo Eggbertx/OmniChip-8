@@ -17,7 +17,7 @@ struct termios old_tio;
 struct termios new_tio;
 
 uchar initScreen() {
-	ioctl(0, TIOCGWINSZ, &max); // get console size to make sure the console is big enough
+	ioctl(0, TIOCGWINSZ, &max); /* get console size to make sure the console is big enough */
 	if(max.ws_col < SCREEN_WIDTH || max.ws_row < SCREEN_HEIGHT) {
 		printf("Error: console too small. Must be at least %d rows and %d columns.\n", SCREEN_HEIGHT, SCREEN_WIDTH);
 		printf("Currently: %d rows and %d columns.\n", max.ws_row, max.ws_col);
@@ -25,7 +25,7 @@ uchar initScreen() {
 	}
 
 	initscr();
-	// keypad(stdscr, 1);
+	/* keypad(stdscr, 1); */
 	nodelay(stdscr, 1);
 	unsigned char c;
 	
@@ -37,12 +37,12 @@ uchar initScreen() {
 
 
 	noecho();
-	// setvbuf(stdin, NULL, _IONBF, 0); 
-	curs_set(0); // hide cursor
+	/* setvbuf(stdin, NULL, _IONBF, 0);  */
+	curs_set(0); /* hide cursor */
 
 	if(max.ws_col > SCREEN_WIDTH+30) {
-		// area for drawing debug info if the screen is large enough
-		// debugWindow = newwin(SCREEN_HEIGHT-2, 28, 1, SCREEN_WIDTH+1);
+		/* area for drawing debug info if the screen is large enough
+		debugWindow = newwin(SCREEN_HEIGHT-2, 28, 1, SCREEN_WIDTH+1); */
 		debugWindow = newwin(64, 64, 20, 20);
 	}
 
@@ -64,7 +64,6 @@ uchar initAudio() {
 uchar getEvent() {
 	int ch = getch();
 	uchar event = 0;
-	// printf("ch = %d\n", ch);
 	switch(ch) {
 		case 27:
 			event = EVENT_ESCAPE;
@@ -72,7 +71,7 @@ uchar getEvent() {
 			exit(0);
 			break;
 		default:
-			// ungetch(ch);
+			/* ungetch(ch); */
 			break;
 	}
 	mvprintw(0,65,"ch = %d\n",ch);

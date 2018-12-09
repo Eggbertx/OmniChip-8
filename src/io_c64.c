@@ -1,7 +1,7 @@
 #include "io.h"
 
 
-// placeholder stuff until the main stuff works
+/* placeholder stuff until the main stuff works */
 
 uchar getEvent() {
 

@@ -6,7 +6,7 @@ Supported platforms
 ------ 
 ### Partial
  * Desktop SDL
- * curses
+ * (n)curses
  
 ### Planned
  * MS-DOS/FreeDOS/DR-DOS

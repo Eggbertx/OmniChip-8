@@ -73,14 +73,6 @@ uchar runCycles(uchar printdebug);
 
 void clearDisplay();
 
-void setPixel(uchar x, uchar y);
-
-void drawSprite(uchar height, uchar x, uchar y);
-
-void drawScreen();
-
-ushort getOpcode(); 
-
 void reset();
 
 uchar load(char* file);

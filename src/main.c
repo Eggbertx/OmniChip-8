@@ -4,6 +4,7 @@
 
 
 int main(int argc, char *argv[]) {
+	int debug = 0;
 	if(argc != 2) {
 		fprintf(stderr, "usage: %s rompath\n", argv[0]);
 		return 0;
@@ -24,10 +25,16 @@ int main(int argc, char *argv[]) {
 		return 0;
 	};
 
+#ifdef SDL_IO
+	// TODO: figure out a better way to handle this
 	if(runCycles(1) > 0) {
 		return 0;
 	}
-
+#else
+	if(runCycles(0) > 0) {
+		return 0;
+	}
+#endif
 	cleanup();
 	return 0;
 }

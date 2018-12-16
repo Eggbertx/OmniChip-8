@@ -51,46 +51,21 @@ void clearDisplay() {
 	/* clearScreen(); */
 }
 
-void setPixel(uchar x, uchar y) {
-	if(x > 64) {
-		x -= 64;
-		cpu.V[0xF] = 1;
-	}
-	if(y > 32) {
-		y -= 32;
-		cpu.V[0xF] = 1;
-	}
-	int i = x + (y * 64);
-	cpu.screen[i] ^= 1;
-}
-
-void drawSprite(uchar height, uchar x, uchar y) {
-	int sy;
-	int sx;
-	for(sy = 0; sy < height; sy++) {
-		for(sx = 0; sx < 8; sx++) {
-			if(cpu.memory[cpu.I+sx+sy] != 0) setPixel(x,y);
-		}
-	}
-}
-
 void drawScreen() {
-	int p = 0;
-	for(p = 0; p < 64*32; p++) {
-		if((cpu.screen[p>>3]&(128>>(p&7))) != 0) {
-			int x = p % 64;
- 			int y = (p - x) / 32;
-			drawPixel(x,y);
+	int x = 0;
+	int y = 0;
+	for(y = 0; y < 32; y++) {
+		for(x = 0; x < 64; x++) {
+			if(cpu.screen[x+y*64] == 0) {
+
+			} else {
+				drawPixel(x, y);
+			}
 		}
 	}
+
 	flipScreen();
 }
-
-ushort getOpcode() {
-	ushort opcode = cpu.memory[cpu.PC] << 8 | cpu.memory[cpu.PC + 1];
-	cpu.PC += 2;
-	return opcode;
-} 
 
 void dumpBytes(uchar* bytes, short filesize, char* filename) {
 	int i;
@@ -148,8 +123,7 @@ uchar runCycles(uchar printdebug) {
 		if(cpu.status == STATUS_PAUSED) {
 			continue;
 		}
-		drawScreen();
-		delay(60);
+		delay(16);
 
 
 		if(cpu.PC > ROM_END_ADDR) {
@@ -167,7 +141,7 @@ uchar runCycles(uchar printdebug) {
 		nnn = cpu.opcode & 0x0FFF;
 		nn = cpu.opcode & 0x00FF;
 		n = cpu.opcode & 0x000F;
-
+		cpu.drawFlag = 0;
 		cpu.currentKey = getKey();
 
 		switch(cpu.opcode & 0xF000) {
@@ -175,6 +149,7 @@ uchar runCycles(uchar printdebug) {
 				if(cpu.opcode == 0x00E0) {
 					if(printdebug) addrInfo("CLS");
 					clearDisplay();
+					cpu.drawFlag = 1;
 				} else if(cpu.opcode == 0x00EE) {
 					if(printdebug) addrInfo("RET");
 					cpu.stackPointer--;
@@ -287,20 +262,25 @@ uchar runCycles(uchar printdebug) {
 			}
 			case 0xD000:
 				if (printdebug) addrInfo("DRW V%X, V%X, #%x", x, y, n);
-				uchar sx = 0;
-				uchar sy = 0;
-				
-				for(sy = 0; sy < n; sy++) {
-					uchar sprite = cpu.memory[cpu.I + sy];
+				ushort sx = 0;
+				ushort sy = 0;
+				uchar pixel;
+				ushort offset;
+				cpu.V[0xF] = 0;
+
+				for(sy = 0; sy < n && (sy+y) < 32; sy++) {
+					pixel = cpu.memory[cpu.I+sy];
 					for(sx = 0; sx < 8; sx++) {
-						if((sprite & 128) > 0) {
-							if(x + sx > 64 || y + sy > 32) cpu.V[0xF] = 1;
-							setPixel(sx, sy);
+						if((pixel & (0x80 >> sx)) != 0) {
+							ushort offset = (cpu.V[x] + sx + ((cpu.V[y] + sy) * 64));
+							if(cpu.screen[offset] == 1) {
+								cpu.V[0xF] = 1;
+							}
+							cpu.screen[offset] ^= 1;
 						}
 					}
 				}
-				/* drawSprite(n, x, y); */
-
+				cpu.drawFlag = 1;
 				break;
 			case 0xE000:
 				if(nn == 0x009E) {
@@ -354,6 +334,9 @@ uchar runCycles(uchar printdebug) {
 				goto unrecognized_opcode;
 			}
 		}
+		if(cpu.drawFlag == 1) {
+			drawScreen();
+		}
 	}
 	return 0;
 
@@ -384,6 +367,9 @@ uchar load(char* file) {
 	}
 	fseek(rom_file, 0L, SEEK_END);
 	cpu.romSize = ftell(rom_file);
+	if(cpu.romSize == 0) {
+		return 1;
+	}
 	printf("Loading %s (%d bytes)\n", file, cpu.romSize);
 	rewind(rom_file);
 

@@ -94,12 +94,9 @@ void playAudio(void* data, void* stream, int length) {
 
 void drawPixel(uchar x, uchar y) {
 	SDL_RenderDrawPoint(renderer, x, y);
-	/* flipScreen(); */
 }
 
 void flipScreen() {
-	/* SDL_BlitScaled(surface, r, renderer); */
-	
 	SDL_RenderPresent(renderer);
 }
 

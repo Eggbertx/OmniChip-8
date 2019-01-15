@@ -26,7 +26,7 @@ uchar font[80] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
 };
 
-void reset() {
+void reset(void) {
 	cpu.status = STATUS_RUNNING;
 	cpu.PC = ROM_START_ADDR;
 	srand(time(NULL));
@@ -46,19 +46,17 @@ uchar initChip8(char* rom) {
 	return load(rom);
 }
 
-void clearDisplay() {
+void clearDisplay(void) {
 	memset(cpu.screen, 0, 64*32);
 	/* clearScreen(); */
 }
 
-void drawScreen() {
+void drawScreen(void) {
 	int x = 0;
 	int y = 0;
 	for(y = 0; y < 32; y++) {
 		for(x = 0; x < 64; x++) {
-			if(cpu.screen[x+y*64] == 0) {
-
-			} else {
+			if(cpu.screen[x+y*64] != 0) {
 				drawPixel(x, y);
 			}
 		}
@@ -86,7 +84,7 @@ void dumpBytes(uchar* bytes, short filesize, char* filename) {
 	fclose(dumpFile);
 }
 
-void printStatus() {
+void printStatus(void) {
 	int r;
 	int s;
 
@@ -123,11 +121,11 @@ uchar runCycles(uchar printdebug) {
 		if(cpu.status == STATUS_PAUSED) {
 			continue;
 		}
-		delay(16);
+		/* delay(8); */
 
 
 		if(cpu.PC > ROM_END_ADDR) {
-			printf("Program counter (%04X) reached end of file\n", cpu.PC);
+			printf("Program counter (%04x) reached end of file\n", cpu.PC);
 			cpu.status = STATUS_PAUSED;
 			continue;
 		}
@@ -152,16 +150,16 @@ uchar runCycles(uchar printdebug) {
 					cpu.drawFlag = 1;
 				} else if(cpu.opcode == 0x00EE) {
 					if(printdebug) addrInfo("RET");
-					cpu.stackPointer--;
 					cpu.PC = cpu.stack[cpu.stackPointer] + ROM_START_ADDR;
+					cpu.stackPointer--;
 				} else {
-					if(printdebug) addrInfo("SYS %04X", nnn); /* not used for most "modern" ROMs */
+					if(printdebug) addrInfo("SYS %04x", nnn); /* not used for most "modern" ROMs */
 				}
 				break;
 			case 0x1000:
 				if(printdebug) addrInfo("JP %#04x", nnn);
 				if(nnn == cpu.PC - 2) {
-					if(printdebug) printf("Reached infinite loop in CHIP-8 ROM, pausing CPU\n");
+					if(printdebug) addrInfo("Reached infinite loop in CHIP-8 ROM, pausing CPU\n");
 					cpu.status = STATUS_PAUSED;
 					break;
 				}
@@ -169,7 +167,7 @@ uchar runCycles(uchar printdebug) {
 				break;
 			case 0x2000:
 				/* increment SP, put PC on top of stack, set to nnn */
-				if(printdebug) addrInfo("CALL %#04X", nnn);
+				if(printdebug) addrInfo("CALL %#04x", nnn);
 				cpu.stack[cpu.stackPointer] = cpu.PC;
 				cpu.stackPointer++;
 				cpu.PC = nnn;
@@ -244,6 +242,7 @@ uchar runCycles(uchar printdebug) {
 			}
 			break;
 			case 0x9000:
+				if(printdebug) addrInfo("SNE V%X, V%X", x, y);
 				if(cpu.V[x] != cpu.V[y])
 					cpu.PC += 2;
 				break;
@@ -252,27 +251,29 @@ uchar runCycles(uchar printdebug) {
 				cpu.I = nnn;
 				break;
 			case 0xB000:
-				cpu.PC = cpu.V[0] + nnn;
+				if(printdebug) addrInfo("JP V0, %#04x", nnn);
+				cpu.PC = nnn + cpu.V[0];
 				break;
 			case 0xC000: {
+				uchar rnd;
 				if(printdebug) addrInfo("RND V%X, #%x", x, nn);
-				uchar rnd = (rand() % 255) + 1;
+				rnd = (rand() % 255) + 1;
 				cpu.V[x] = rnd & nn;
 				break;
 			}
-			case 0xD000:
-				if (printdebug) addrInfo("DRW V%X, V%X, #%x", x, y, n);
+			case 0xD000: {
 				ushort sx = 0;
 				ushort sy = 0;
 				uchar pixel;
 				ushort offset;
+				if (printdebug) addrInfo("DRW V%X, V%X, #%x", x, y, n);
 				cpu.V[0xF] = 0;
 
 				for(sy = 0; sy < n && (sy+y) < 32; sy++) {
 					pixel = cpu.memory[cpu.I+sy];
 					for(sx = 0; sx < 8; sx++) {
 						if((pixel & (0x80 >> sx)) != 0) {
-							ushort offset = (cpu.V[x] + sx + ((cpu.V[y] + sy) * 64));
+							offset = (cpu.V[x] + sx + ((cpu.V[y] + sy) * 64));
 							if(cpu.screen[offset] == 1) {
 								cpu.V[0xF] = 1;
 							}
@@ -281,15 +282,16 @@ uchar runCycles(uchar printdebug) {
 					}
 				}
 				cpu.drawFlag = 1;
-				break;
+			}
+			break;
 			case 0xE000:
 				if(nn == 0x009E) {
-					if(printdebug) addrInfo("Skip if key in V%X is pressed, not yet fully implemented", x);
+					if(printdebug) addrInfo("SKP V%X", x);
 					if(cpu.currentKey > -1 && cpu.V[x] == cpu.currentKey) {
 						cpu.PC += 2;
 					}
 				} else if(nn == 0x00A1) {
-					if(printdebug) addrInfo("Skip if key in V%X is not pressed, not yet fully implemented", x);
+					if(printdebug) addrInfo("SKNP V%X", x);
 					if(cpu.currentKey > -1 && cpu.V[x] != cpu.currentKey) {
 						cpu.PC += 2;
 					}
@@ -297,13 +299,17 @@ uchar runCycles(uchar printdebug) {
 				break;
 			case 0xF000: {
 				if(nn == 0x0007) {
+					if(printdebug) addrInfo("LD V%X, DT", x);
 					cpu.V[x] = cpu.delayTimer;
 				} else if(nn == 0x000A) {
+					int key = -1;
+					if(printdebug) addrInfo("LD V%X, K", x);
 					do {
-						cpu.currentKey = getKey();
-					} while(cpu.currentKey == -1);
-					cpu.V[x] = cpu.currentKey;
-					cpu.PC += 2;
+						key = getKey();
+						printf("Key: %X\n", key);
+					} while(key == -1);
+					cpu.V[x] = key;
+					/* cpu.PC += 2; */
 				} else if(nn == 0x0015) {
 					cpu.delayTimer = cpu.V[x];
 				} else if(nn == 0x0018) {
@@ -312,14 +318,15 @@ uchar runCycles(uchar printdebug) {
 					cpu.I += cpu.V[x];
 				} else if(nn == 0x0029) {
 					if(printdebug) addrInfo("Set I to the location of the sprite for the character in V%X, not yet implemented", x);
-					goto unsupported_opcode;
+					error("Unsupported opcode: %04x at %04x\n", cpu.opcode, cpu.PC);
+					return 1;
 				} else if(nn == 0x0033) {
 					cpu.memory[cpu.I+0] = (cpu.V[x]/10) % 10;
 					cpu.memory[cpu.I+1] = (cpu.V[x]/100) % 10;
 					cpu.memory[cpu.I+2] = cpu.V[x] % 10;
 				} else if(nn == 0x0055) {
-					if(printdebug) addrInfo("write registers V0 - V%X to memory, with %#04x as the offset", x, cpu.I);
 					ushort i;
+					if(printdebug) addrInfo("write registers V0 - V%X to memory, with %#04x as the offset", x, cpu.I);
 					for(i = 0; i <= x; i++) {
 						cpu.memory[cpu.I + i] = cpu.V[cpu.I + i];
 					}
@@ -329,10 +336,11 @@ uchar runCycles(uchar printdebug) {
 						cpu.V[cpu.I + i] = cpu.memory[cpu.I + i];
 					}
 				}
-				break;
-			default:
-				goto unrecognized_opcode;
 			}
+			break;
+			default:
+				error("Unrecognized opcode: %04x at %04x\n", cpu.opcode, cpu.PC);
+				goto unrecognized_opcode;
 		}
 		if(cpu.drawFlag == 1) {
 			drawScreen();
@@ -346,13 +354,18 @@ uchar runCycles(uchar printdebug) {
 		printStatus();
 		cpu.status = STATUS_STOPPED;
 		return 1;
+}
 
-	unsupported_opcode:
-		fprintf(stderr, "Unsupported opcode: %04x at %04x\n", cpu.opcode, cpu.PC);
-		dumpBytes(cpu.memory, 4096, "dumps/memorybytes_unsupported.txt");
-		printStatus();
-		cpu.status = STATUS_STOPPED;
-		return 1;
+void error(char* format, ...) {
+	va_list args;
+
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+
+	dumpBytes(cpu.memory, 4096, "dumps/memorybytes.txt");
+	printStatus();
+	cpu.status = STATUS_STOPPED;
 }
 
 uchar load(char* file) {

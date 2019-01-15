@@ -7,3 +7,5 @@ dumps/
 build/
 packages/
 OmniChip-8.vcxproj.user*
+src/*.s
+src/*.o

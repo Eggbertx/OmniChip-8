@@ -11,7 +11,7 @@ SDL_Window *screen;
 SDL_Texture *texture;
 SDL_Surface *surface;
 	
-uchar initScreen() {
+uchar initScreen(void) {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	if(FULLSCREEN) {
 		screen = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
@@ -32,7 +32,7 @@ void delay(ushort milliseconds) {
 	SDL_Delay(milliseconds);
 }
 
-uchar getEvent() {
+uchar getEvent(void) {
 	SDL_Event e;
 	SDL_PollEvent(&e);
 	switch(e.type) {
@@ -55,10 +55,10 @@ uchar getEvent() {
 	return 0;
 }
 
-schar getKey() {
+uchar getKey(void) {
 	int numKeys = 0;
 	const uchar* state = SDL_GetKeyboardState(&numKeys);
-	if(numKeys == 0) return -1;
+	if(numKeys == 0) return 0xFF;
 	if(state[SDL_SCANCODE_1]) return 0x01;
 	if(state[SDL_SCANCODE_2]) return 0x02;
 	if(state[SDL_SCANCODE_3]) return 0x03;
@@ -75,10 +75,10 @@ schar getKey() {
 	if(state[SDL_SCANCODE_X]) return 0x00;
 	if(state[SDL_SCANCODE_C]) return 0x0b;
 	if(state[SDL_SCANCODE_V]) return 0x0f;
-	return -1;
+	return 0xFF;
 }
 
-uchar initAudio() {
+uchar initAudio(void) {
 	SDL_AudioSpec audioSpec;
 	audioSpec.freq = BEEP_FREQUENCY;
 	audioSpec.samples = 2048;
@@ -93,18 +93,19 @@ void playAudio(void* data, void* stream, int length) {
 }
 
 void drawPixel(uchar x, uchar y) {
+	printf("Drawing pixel at %d,%d\n", x, y);
 	SDL_RenderDrawPoint(renderer, x, y);
 }
 
-void flipScreen() {
+void flipScreen(void) {
 	SDL_RenderPresent(renderer);
 }
 
-void clearScreen() {
+void clearScreen(void) {
 	SDL_FillRect(surface, NULL, 0x000000);
 }
 
-void cleanup() {
+void cleanup(void) {
 	SDL_FreeSurface(surface);
 	SDL_Quit();
 }

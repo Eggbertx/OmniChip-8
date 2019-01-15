@@ -67,14 +67,16 @@ uchar initChip8(char* rom);
 
 void dumpBytes(uchar* bytes, short filesize, char* filename);
 
-void printStatus();
+void printStatus(void);
 
 uchar runCycles(uchar printdebug);
 
-void clearDisplay();
+void clearDisplay(void);
 
-void reset();
+void reset(void);
 
 uchar load(char* file);
+
+void error(char* format, ...);
 
 #endif

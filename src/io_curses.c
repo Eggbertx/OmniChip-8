@@ -15,8 +15,9 @@ struct winsize max;
 WINDOW* debugWindow;
 struct termios old_tio;
 struct termios new_tio;
+int debug_line = 0;
 
-uchar initScreen() {
+uchar initScreen(void) {
 	ioctl(0, TIOCGWINSZ, &max); /* get console size to make sure the console is big enough */
 	if(max.ws_col < SCREEN_WIDTH || max.ws_row < SCREEN_HEIGHT) {
 		printf("Error: console too small. Must be at least %d rows and %d columns.\n", SCREEN_HEIGHT, SCREEN_WIDTH);
@@ -27,7 +28,6 @@ uchar initScreen() {
 	initscr();
 	/* keypad(stdscr, 1); */
 	nodelay(stdscr, 1);
-	unsigned char c;
 	
 	tcgetattr(STDIN_FILENO,&old_tio);
 	new_tio=old_tio;
@@ -43,25 +43,25 @@ uchar initScreen() {
 	if(max.ws_col > SCREEN_WIDTH+30) {
 		/* area for drawing debug info if the screen is large enough
 		debugWindow = newwin(SCREEN_HEIGHT-2, 28, 1, SCREEN_WIDTH+1); */
-		debugWindow = newwin(64, 64, 20, 20);
+		debugWindow = newwin(64, 64, 0, 65);
 	}
 
 	return 0;
 }
 
-void flipScreen() {
+void flipScreen(void) {
 	refresh();
 }
 
-void clearScreen() {
-
+void clearScreen(void) {
+	clear();
 }
 
-uchar initAudio() {
+uchar initAudio(void) {
 	return 0;
 }
 
-uchar getEvent() {
+uchar getEvent(void) {
 	int ch = getch();
 	uchar event = 0;
 	switch(ch) {
@@ -74,11 +74,10 @@ uchar getEvent() {
 			/* ungetch(ch); */
 			break;
 	}
-	mvprintw(0,65,"ch = %d\n",ch);
 	return event;
 }
 
-schar getKey() {
+uchar getKey(void) {
 	int ch = -1;
 	int key = -1;
 
@@ -136,28 +135,30 @@ schar getKey() {
 			ungetch(ch);
 			break;
 	}
+	addrInfo("Key: %d\n", key);
 	return key;
 }
 
 void delay(ushort milliseconds) {
-
+	usleep(milliseconds * 1000);
 }
 
 void drawPixel(uchar x, uchar y) {
-	mvprintw(y, x, "#");
+	mvprintw(y, x, PIXEL_CHAR);
 }
 
 void addrInfo(char* format, ...) {
 	va_list args;
 
 	va_start(args, format);
-	mvwprintw(debugWindow, 0, 0, "debugBuffer");
+	mvwprintw(debugWindow, debug_line, 0, format);
+	debug_line++;
+
 	va_end(args);
 	wrefresh(debugWindow);
-	
 }
 
-void cleanup() {
+void cleanup(void) {
 	tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
 	endwin();
 }

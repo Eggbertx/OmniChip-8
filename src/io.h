@@ -14,7 +14,7 @@
 
 #define SCREEN_WIDTH 64 * PIXEL_SCALE
 #define SCREEN_HEIGHT 32 * PIXEL_SCALE 
-#define WINDOW_TITLE "Chip-8 Emulator"
+#define WINDOW_TITLE "OmniChip-8"
 
 #define BG_COLOR 0xFF
 #define FG_COLOR 0x00
@@ -32,23 +32,23 @@ uchar *keystates;
 
 uchar pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
 
-uchar getEvent();
+uchar getEvent(void);
 
-schar getKey();
+uchar getKey(void);
 
-uchar initScreen();
+uchar initScreen(void);
 
 void delay(ushort milliseconds);
 
-uchar initAudio();
+uchar initAudio(void);
 
 void drawPixel(uchar x, uchar y);
 
-void clearScreen();
+void clearScreen(void);
 
-void flipScreen();
+void flipScreen(void);
 
-void cleanup();
+void cleanup(void);
 
 void addrInfo(char* format, ...);
 

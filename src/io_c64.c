@@ -3,16 +3,15 @@
 
 /* placeholder stuff until the main stuff works */
 
-uchar getEvent() {
-
+uchar getEvent(void) {
 	return 0;
 }
 
-schar getKey() {
-	return 0;
+schar getKey(void) {
+	return -1;
 }
 
-uchar initScreen() {
+uchar initScreen(void) {
 	return 0;
 }
 
@@ -20,22 +19,26 @@ void delay(ushort milliseconds) {
 	
 }
 
-uchar initAudio() {
+uchar initAudio(void) {
 	return 0;
 }
 
 void drawPixel(uchar x, uchar y) {
-	
-}
-
-void clearScreen() {
 
 }
 
-void flipScreen() {
+void clearScreen(void) {
 
 }
 
-void quit(uchar exit_code) {
+void flipScreen(void) {
+
+}
+
+void cleanup(void) {
+
+}
+
+void addrInfo(char* format, ...) {
 
 }

@@ -7,8 +7,8 @@ uchar getEvent(void) {
 	return 0;
 }
 
-schar getKey(void) {
-	return -1;
+uchar getKey(void) {
+	return 0xFF;
 }
 
 uchar initScreen(void) {

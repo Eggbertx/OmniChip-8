@@ -1,7 +1,7 @@
 #ifndef IO_H
 #define IO_H
 
-#include "cpu.h"
+#include "chip8.h"
 
 #ifdef SDL_IO
 	#define PIXEL_SCALE 8
@@ -23,24 +23,23 @@
 #define EVENT_ESCAPE 1
 #define EVENT_WINDOWCLOSE 2
 
-uchar *keystates;
-
 #ifdef CURSES_IO
 	#define KEY_ESCAPE 27
 #endif
 
-
-uchar pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
-
 uchar getEvent(void);
 
 uchar getKey(void);
+
+schar isPressed(uchar key);
 
 uchar initScreen(void);
 
 void delay(ushort milliseconds);
 
 uchar initAudio(void);
+
+void playSound(void);
 
 void drawPixel(uchar x, uchar y);
 
@@ -50,6 +49,6 @@ void flipScreen(void);
 
 void cleanup(void);
 
-void addrInfo(char* format, ...);
+void addrInfo(struct Chip8* chip8, char* format, ...);
 
 #endif

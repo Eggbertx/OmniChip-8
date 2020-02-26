@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "io.h"
-#include "cpu.h"
+#include "chip8.h"
 
 #define PIXEL_CHAR "#"
 struct winsize max;
@@ -61,6 +61,10 @@ uchar initAudio(void) {
 	return 0;
 }
 
+void playSound(void) {
+	/* this probably won't be implemented with curses mode */
+}
+
 uchar getEvent(void) {
 	int ch = getch();
 	uchar event = 0;
@@ -77,9 +81,13 @@ uchar getEvent(void) {
 	return event;
 }
 
+schar isPressed(uchar key) {
+	return 0;
+}
+
 uchar getKey(void) {
-	int ch = -1;
-	int key = -1;
+	int ch = 0;
+	int key = 0xFF;
 
 	ch = getch();
 	switch(ch) {
@@ -135,7 +143,6 @@ uchar getKey(void) {
 			ungetch(ch);
 			break;
 	}
-	addrInfo("Key: %d\n", key);
 	return key;
 }
 
@@ -147,7 +154,7 @@ void drawPixel(uchar x, uchar y) {
 	mvprintw(y, x, PIXEL_CHAR);
 }
 
-void addrInfo(char* format, ...) {
+void addrInfo(struct Chip8* chip8, char* format, ...) {
 	va_list args;
 
 	va_start(args, format);

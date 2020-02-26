@@ -1,14 +1,13 @@
-#include <stdint.h>
-
 #ifndef CHIP8_H
 #define CHIP8_H
+
+#include <stdint.h>
 
 #define FONT_START_ADDR 0x050
 #define FONT_END_ADDR 0X0A0
 #define ROM_START_ADDR 0x200
 #define ROM_END_ADDR 0xFFF /* 4096 */
 #define CHIP8_MEMORY 4096
-/* #define SCHIP8_MEMORY ? */
 
 #if defined(UINT8_MAX)
 	typedef uint8_t uchar;
@@ -27,19 +26,16 @@
 	typedef signed short sshort;
 #endif
 
-#define CPU_CHIP8 0
-#define CPU_SUPERCHIP8 1
-#define CPU_MEGACHIP8 2
-
 #define STATUS_STOPPED 0
 #define STATUS_RUNNING 1
 #define STATUS_PAUSED 2
+#define STATUS_ERROR 4
 
-struct Chip8CPU {
-	uchar type; /* chip8, superchip8, megachip8 */
+struct Chip8 {
+	uchar printDebug;
 	uchar status;
 	uchar* romBytes;
-	uchar romSize;
+	ushort romSize;
 	uchar V[16];		/* registers: VF is used as carry for arithmetic and sprite collisions */
 	ushort PC;
 	ushort I;			/* address register */
@@ -59,24 +55,22 @@ struct Chip8CPU {
 	/* All drawings are done in XOR mode. */
 };
 
-uchar font[80];
+extern uchar font[80];
 
-struct Chip8CPU cpu;
-
-uchar initChip8(char* rom);
+uchar initChip8(struct Chip8* chip8, char* rom);
 
 void dumpBytes(uchar* bytes, short filesize, char* filename);
 
-void printStatus(void);
+void printStatus(struct Chip8* chip8);
 
-uchar runCycles(uchar printdebug);
+void runCycles(struct Chip8* chip8);
 
-void clearDisplay(void);
+void clearDisplay(struct Chip8* chip8);
 
-void reset(void);
+void reset(struct Chip8* chip8);
 
-uchar load(char* file);
+uchar load(struct Chip8* chip8, char* file);
 
-void error(char* format, ...);
+void error(struct Chip8* chip8, char* format, ...);
 
 #endif

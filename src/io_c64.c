@@ -1,4 +1,5 @@
 #include "io.h"
+#include "chip8.h"
 
 
 /* placeholder stuff until the main stuff works */
@@ -12,6 +13,10 @@ uchar getKey(void) {
 }
 
 uchar initScreen(void) {
+	return 0;
+}
+
+schar isPressed(uchar key) {
 	return 0;
 }
 
@@ -39,6 +44,6 @@ void cleanup(void) {
 
 }
 
-void addrInfo(char* format, ...) {
+void addrInfo(struct Chip8* chip8, char* format, ...) {
 
 }

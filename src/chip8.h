@@ -69,8 +69,6 @@ void clearDisplay(struct Chip8* chip8);
 
 void reset(struct Chip8* chip8);
 
-uchar load(struct Chip8* chip8, char* file);
-
 void error(struct Chip8* chip8, char* format, ...);
 
 #endif

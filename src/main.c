@@ -6,28 +6,31 @@
 #endif
 #include "chip8.h"
 #include "io.h"
+#include "util.h"
 
 int main(int argc, char *argv[]) {
 	int exitStatus;
 	struct Chip8* chip8 = NULL;
 	chip8 = (struct Chip8*)malloc(sizeof(struct Chip8));
 	if(argc != 2) {
-		printf("usage: %s rompath\n", argv[0]);
-		return 0;
+		#ifndef __CC65__
+			oc8log("usage: %s rompath\n", argv[0]);
+			return 0;
+		#endif
 	}
 
 	if(initScreen() > 0) {
-		printf("ERROR: Unable to init screen.\n");
+		oc8log("ERROR: Unable to init screen.\n");
 		return 0;
 	}
 
 	if(initAudio() > 0) {
-		printf("ERROR: Unable to init audio.\n");
+		oc8log("ERROR: Unable to init audio.\n");
 		return 0;
 	}
 
 	if (initChip8(chip8, argv[1]) > 0) {
-		printf("ERROR: Something went wrong while loading %s\n", argv[1]);
+		oc8log("ERROR: Something went wrong while loading %s\n", argv[1]);
 		return 0;
 	}
 

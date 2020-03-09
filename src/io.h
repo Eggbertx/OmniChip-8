@@ -5,9 +5,13 @@
 
 #ifdef SDL_IO
 	#define PIXEL_SCALE 8
+#elif defined(__C64__)
+	#define PIXEL_SCALE 5
 #else
 	#define PIXEL_SCALE 1
 #endif
+
+#define PIXEL_CHAR "#"
 
 #define BEEP_AMPLITUDE 28000
 #define BEEP_FREQUENCY 44100

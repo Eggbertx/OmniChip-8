@@ -10,7 +10,6 @@
 #include "io.h"
 #include "chip8.h"
 
-#define PIXEL_CHAR "#"
 struct winsize max;
 WINDOW* debugWindow;
 struct termios old_tio;

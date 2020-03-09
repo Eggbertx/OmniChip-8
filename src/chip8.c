@@ -1,11 +1,11 @@
 #include <stdarg.h>
 #include <stdio.h> 
-/* TODO: replace printf/fprintf with conio.h functions for cc65 */
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "chip8.h"
 #include "io.h"
+#include "util.h"
 
 
 uchar font[80] = {
@@ -44,12 +44,12 @@ void reset(struct Chip8* chip8) {
 
 uchar initChip8(struct Chip8* chip8, char* rom) {
 	reset(chip8);
-	return load(chip8, rom);
+	return loadROM(chip8, rom);
 }
 
 void clearDisplay(struct Chip8* chip8) {
 	memset(chip8->screen, 0, 64*32);
-	/* clearScreen(); */
+	clearScreen();
 }
 
 void drawScreen(struct Chip8* chip8) {
@@ -68,13 +68,14 @@ void drawScreen(struct Chip8* chip8) {
 
 void dumpBytes(uchar* bytes, short filesize, char* filename) {
 	int i;
+	#ifndef __CC65__
 	FILE* dumpFile;
 	
-	printf("Dumping to %s\n", filename);
+	oc8log("Dumping to %s\n", filename);
 
 	dumpFile = fopen(filename, "w");
 	if(dumpFile == NULL) {
-		printf("Error opening %s\n", filename);
+		oc8log("Error opening %s\n", filename);
 		return;
 	}
 
@@ -83,25 +84,26 @@ void dumpBytes(uchar* bytes, short filesize, char* filename) {
 		if((i + 1) % 0x10 == 0) fprintf(dumpFile, "\n");
 	}
 	fclose(dumpFile);
+	#endif
 }
 
 void printStatus(struct Chip8* chip8) {
 	int r = 0;
 	int s = 0;
 
-	printf("V registers:\n");
+	oc8log("V registers:\n");
 	for(r = 0; r < 16; r++) {
-		printf("\tV%X: %x\n", r, chip8->V[r]);
+		oc8log("\tV%X: %x\n", r, chip8->V[r]);
 	}
-	printf("Program counter: %d\n", chip8->PC);
-	printf("Address register (I): %d\n", chip8->I);
-	printf("Delay timer: %d\nSound timer: %d\n", chip8->delayTimer, chip8->soundTimer);
-	printf("chip8->drawFlag: %d\n", chip8->drawFlag);
-	printf("Stack:\n");
+	oc8log("Program counter: %d\n", chip8->PC);
+	oc8log("Address register (I): %d\n", chip8->I);
+	oc8log("Delay timer: %d\nSound timer: %d\n", chip8->delayTimer, chip8->soundTimer);
+	oc8log("chip8->drawFlag: %d\n", chip8->drawFlag);
+	oc8log("Stack:\n");
 	for(s = 0; s < 16; s++) {
-		printf("\tstack[%d]: %x\n", s, chip8->stack[s]);
+		oc8log("\tstack[%d]: %x\n", s, chip8->stack[s]);
 	}
-	printf("Stack pointer: %d\n", chip8->stackPointer);
+	oc8log("Stack pointer: %d\n", chip8->stackPointer);
 }
 
 void runCycles(struct Chip8* chip8) {
@@ -126,13 +128,13 @@ void runCycles(struct Chip8* chip8) {
 		delay(1);
 		if(chip8->delayTimer > 0) chip8->delayTimer--;
 		if(chip8->soundTimer > 0) {
-			printf("beep");
+			oc8log("beep");
 			chip8->soundTimer--;
 		}
 
 
 		if(chip8->PC > ROM_END_ADDR) {
-			printf("Program counter (%04x) reached end of file\n", chip8->PC);
+			oc8log("Program counter (%04x) reached end of file\n", chip8->PC);
 			chip8->status = STATUS_PAUSED;
 			continue;
 		}
@@ -319,7 +321,7 @@ void runCycles(struct Chip8* chip8) {
 					if((chip8->printDebug)) addrInfo(chip8, "LD V%X, K", x);
 					do {
 						key = getKey();
-						printf("Key: %X\n", key);
+						oc8log("Key: %X\n", key);
 					} while(key == 0xFF);
 					chip8->V[x] = key;
 				} else if(nn == 0x0015) {
@@ -360,7 +362,7 @@ void runCycles(struct Chip8* chip8) {
 	return;
 
 	unrecognized_opcode:
-		fprintf(stderr, "Unrecognized opcode: %04x at %04x\n", chip8->opcode, chip8->PC);
+		oc8log("Unrecognized opcode: %04x at %04x\n", chip8->opcode, chip8->PC);
 		dumpBytes(chip8->memory, 4096, "dumps/memorybytes_unrecognized.txt");
 		printStatus(chip8);
 		chip8->status = STATUS_ERROR;
@@ -370,40 +372,10 @@ void error(struct Chip8* chip8, char* format, ...) {
 	va_list args;
 
 	va_start(args, format);
-	vprintf(format, args);
+	/* vprintf(format, args); */
 	va_end(args);
 
 	dumpBytes(chip8->memory, 4096, "dumps/memorybytes.txt");
 	printStatus(chip8);
 	chip8->status = STATUS_STOPPED;
-}
-
-uchar load(struct Chip8* chip8, char* file) {
-	FILE *rom_file;
-	ushort i = 0;
-
-	rom_file = fopen(file, "rb");
-	if(!rom_file) {
-		fprintf(stderr, "Error: couldn\'t load %s\n", file);
-		return 1;
-	}
-	fseek(rom_file, 0L, SEEK_END);
-	chip8->romSize = ftell(rom_file);
-	if(chip8->romSize == 0) {
-		return 1;
-	}
-	printf("Loading %s (%d bytes)\n", file, chip8->romSize);
-	rewind(rom_file);
-
-	chip8->romBytes = (uchar *)malloc(chip8->romSize+1);
-	fread(chip8->romBytes, 1, chip8->romSize,rom_file);
-	fclose(rom_file);
-
-	for(i = 0; i < 80; i++) {
-		chip8->memory[FONT_START_ADDR + i] = font[i];
-	}
-	for(i = 0; i < chip8->romSize; i++) {
-		chip8->memory[ROM_START_ADDR + i] = chip8->romBytes[i];
-	}
-	return 0;
 }

@@ -7,11 +7,11 @@ Supported platforms
 ### Partial
  * Desktop SDL
  * (n)curses
- 
-### Planned
- * MS-DOS/FreeDOS/DR-DOS
  * Commodore 64
+
+### Planned
  * Apple ][
- * NES (maybe)
+ * NES
+ * MS-DOS/FreeDOS/DR-DOS
  * TI-8x
  * 

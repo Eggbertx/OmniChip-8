@@ -34,12 +34,6 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-#if defined(SDL_IO) /* || defined(CURSES_IO) */
-	chip8->printDebug = 1;
-#else
-	chip8->printDebug = 0;
-#endif
-
 #ifdef EMSCRIPTEN_IO
 	emscripten_set_main_loop_arg(runCycles, chip8, 60, 0);
 #else

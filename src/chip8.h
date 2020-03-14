@@ -9,6 +9,10 @@
 #define ROM_END_ADDR 0xFFF /* 4096 */
 #define CHIP8_MEMORY 4096
 
+#ifdef SDL_IO
+	#define PRINT_DEBUG
+#endif
+
 #if defined(UINT8_MAX)
 	typedef uint8_t uchar;
 	typedef int8_t schar;
@@ -32,7 +36,6 @@
 #define STATUS_ERROR 4
 
 struct Chip8 {
-	uchar printDebug;
 	uchar status;
 	uchar* romBytes;
 	ushort romSize;
@@ -51,8 +54,8 @@ struct Chip8 {
 	ushort opcode;
 	uchar key[16];
 	schar currentKey;
-	uchar screen[64 * 32]; 
-	/* All drawings are done in XOR mode. */
+	uchar screen[64 * 32]; /* All drawings are done in XOR mode. */
+	
 };
 
 extern uchar font[80];

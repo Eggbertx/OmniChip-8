@@ -21,7 +21,7 @@ uchar initScreen(void) {
 	if(max.ws_col < SCREEN_WIDTH || max.ws_row < SCREEN_HEIGHT) {
 		printf("Error: console too small. Must be at least %d rows and %d columns.\n", SCREEN_HEIGHT, SCREEN_WIDTH);
 		printf("Currently: %d rows and %d columns.\n", max.ws_row, max.ws_col);
-		exit(2);
+		return 1;
 	}
 
 	initscr();
@@ -70,8 +70,6 @@ uchar getEvent(void) {
 	switch(ch) {
 		case 27:
 			event = EVENT_ESCAPE;
-			cleanup();
-			exit(0);
 			break;
 		default:
 			/* ungetch(ch); */

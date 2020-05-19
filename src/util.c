@@ -1,4 +1,8 @@
+#ifdef GB_IO
+#include <asm/z80/stdarg.h>
+#else
 #include <stdarg.h>
+#endif
 #ifdef __CC65__
 	#include <conio.h>
 #else
@@ -12,7 +16,7 @@
 uchar loadROM(struct Chip8* chip8, char* file) {
 	ushort i = 0;
 
-	#ifndef __CC65__
+	#if !defined (__CC65__) && !defined(EMSCRIPTEN_IO) && !defined(GB_IO)
 		FILE *rom_file;
 
 		rom_file = fopen(file, "rb");
@@ -68,12 +72,12 @@ uchar loadROM(struct Chip8* chip8, char* file) {
 
 int oc8log(const char* format, ...) {
 	int outSize = 0;
-	#ifndef __CC65__
+	#if !defined(__CC65__) && !defined(GB_IO)
 		va_list args;
 		va_start(args, format);
 		outSize = vprintf(format, args);
 		va_end(args);
-	#else
+	#elif !defined(GB_IO)
 		va_list args;
 		va_start(args, format);
 		outSize = vcprintf(format, args);

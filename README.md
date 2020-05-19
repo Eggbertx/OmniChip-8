@@ -8,10 +8,14 @@ Supported platforms
  * Desktop SDL
  * (n)curses
  * Commodore 64
+ * GameBoy
 
 ### Planned
  * Apple ][
  * NES
  * MS-DOS/FreeDOS/DR-DOS
  * TI-8x
- * 
+ * ?
+
+## Screenshot
+![Screenshots](screenshot.png)

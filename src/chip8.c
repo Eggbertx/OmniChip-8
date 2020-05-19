@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
 #include "chip8.h"
 #include "io.h"
 #include "util.h"
@@ -68,7 +69,7 @@ void drawScreen(struct Chip8* chip8) {
 
 void dumpBytes(uchar* bytes, short filesize, char* filename) {
 	int i;
-	#ifndef __CC65__
+	#if !defined(__CC65__) && !defined(GB_IO)
 		FILE* dumpFile;
 		
 		oc8log("Dumping to %s\n", filename);

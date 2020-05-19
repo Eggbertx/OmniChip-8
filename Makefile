@@ -2,6 +2,7 @@ CC=cc
 LD=ld
 CL65=cl65
 EMCC=emcc
+LCC=lcc
 TURBOCDIR=C:\TurboC
 ifeq (${IO},)
 	IO=sdl
@@ -11,7 +12,7 @@ ifeq (${IO},sdl)
 	INC_DIRS=-I/usr/include/SDL2
 	LIB=-lSDL2
 else ifeq (${IO},curses)
-	LIB=-lncurses
+	LIB=-lcurses
 endif
 
 SOURCES=src/chip8.c src/io_${IO}.c src/util.c src/main.c
@@ -26,6 +27,9 @@ build-dos:
 
 build-cc65:
 	${CL65} -o ${BIN}-${IO}.prg -t ${IO} ${SOURCES}
+
+# build-gb:
+# 	${LCC} -o ${BIN}.gb -DGB_IO ${SOURCES}
 
 build-emscripten:
 	${EMCC} -o ${BIN}.html -s --embed-file games USE_SDL=2 --shell-file shell.html -DSDL_IO -DEMSCRIPTEN_IO ${SOURCES}

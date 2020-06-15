@@ -5,6 +5,6 @@ dumps/
 .vs/
 build/
 packages/
-OmniChip-8.vcxproj.user*
+*.vcxproj.user*
 src/*.s
 src/*.o

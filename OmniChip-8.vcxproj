@@ -132,6 +132,7 @@
     <ClCompile Include="src\chip8.c" />
     <ClCompile Include="src\io_sdl.c" />
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\util.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\chip8.h" />

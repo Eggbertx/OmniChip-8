@@ -24,6 +24,9 @@
     <ClCompile Include="src\io_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\chip8.h">

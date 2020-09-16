@@ -5,6 +5,10 @@
 #include "chip8.h"
 
 
+#define OFFSET_X GRAPHICS_WIDTH/2 - SCREEN_WIDTH/2 - 1
+#define OFFSET_Y GRAPHICS_HEIGHT/2 - SCREEN_HEIGHT/2 - 1
+
+
 uchar getEvent(void) {
 	return 0;
 }
@@ -14,7 +18,7 @@ uchar getKey(void) {
 }
 
 uchar initScreen(void) {
-
+	color(BLACK, WHITE, M_FILL);
 	return 0;
 }
 
@@ -32,7 +36,15 @@ uchar initAudio(void) {
 }
 
 void drawPixel(uchar x, uchar y) {
-	plot(x,y, WHITE, SOLID);
+	int cY;
+	for(cY = 0; cY < PIXEL_SCALE; cY++) {
+		line(
+			x*PIXEL_SCALE + OFFSET_X,
+			y*PIXEL_SCALE+cY + OFFSET_Y,
+			x*PIXEL_SCALE+PIXEL_SCALE + OFFSET_X,
+			y*PIXEL_SCALE+cY + OFFSET_Y
+		);
+	}
 }
 
 void clearScreen(void) {

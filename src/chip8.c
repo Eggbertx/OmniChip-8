@@ -28,10 +28,12 @@ uchar font[80] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
 };
 
-void reset(struct Chip8* chip8) {
+void resetChip8(struct Chip8* chip8) {
 	chip8->status = STATUS_RUNNING;
 	chip8->PC = ROM_START_ADDR;
+#ifndef GB_IO /* because z88dk doesn't appear to have time() or clock() for the GameBoy platform */
 	srand(time(NULL));
+#endif
 	memset(chip8->memory, 0, sizeof(chip8->memory));
 	memset(chip8->stack, 0, sizeof(chip8->stack));
 	memset(chip8->V, 0, sizeof(chip8->V));
@@ -44,7 +46,7 @@ void reset(struct Chip8* chip8) {
 }
 
 uchar initChip8(struct Chip8* chip8, char* rom) {
-	reset(chip8);
+	resetChip8(chip8);
 	return loadROM(chip8, rom);
 }
 

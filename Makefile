@@ -2,7 +2,7 @@ CC=cc
 LD=ld
 CL65=cl65
 EMCC=emcc
-LCC=lcc
+ZCC=zcc
 TURBOCDIR=C:\TurboC
 ifeq (${IO},)
 	IO=sdl
@@ -29,8 +29,7 @@ build-cc65:
 	${CL65} -o ${BIN}-${IO}.prg -t ${IO} ${SOURCES}
 
 build-gb:
-	$(warning Not supported yet (needs LCC/GBDK))
-	${LCC} -o ${BIN}.gb -DGB_IO ${SOURCES}
+	${ZCC} +gb -create-app -o ${BIN}.bin -DGB_IO ${SOURCES}
 
 build-emscripten:
 	${EMCC} -o ${BIN}.html -s --embed-file games USE_SDL=2 --shell-file shell.html -DSDL_IO -DEMSCRIPTEN_IO ${SOURCES}

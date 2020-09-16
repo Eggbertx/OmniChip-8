@@ -1,8 +1,4 @@
-#ifdef GB_IO
-#include <asm/z80/stdarg.h>
-#else
 #include <stdarg.h>
-#endif
 #ifdef __CC65__
 	#include <conio.h>
 #else
@@ -72,15 +68,11 @@ uchar loadROM(struct Chip8* chip8, char* file) {
 
 int oc8log(const char* format, ...) {
 	int outSize = 0;
-	#if !defined(__CC65__) && !defined(GB_IO)
+	#if !defined(__CC65__)
 		va_list args;
 		va_start(args, format);
 		outSize = vprintf(format, args);
 		va_end(args);
-	#elif !defined(GB_IO)
-		va_list args;
-		va_start(args, format);
-		outSize = vcprintf(format, args);
 	#endif
 	return outSize;
 }

@@ -7,6 +7,8 @@
 	#define PIXEL_SCALE 8
 #elif defined(__C64__)
 	#define PIXEL_SCALE 5
+#elif defined(GB_IO)
+	#define PIXEL_SCALE 2
 #else
 	#define PIXEL_SCALE 1
 #endif

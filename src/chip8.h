@@ -55,7 +55,6 @@ struct Chip8 {
 	uchar key[16];
 	schar currentKey;
 	uchar screen[64 * 32]; /* All drawings are done in XOR mode. */
-	
 };
 
 extern uchar font[80];
@@ -70,7 +69,7 @@ void runCycles(void* chip8_ptr);
 
 void clearDisplay(struct Chip8* chip8);
 
-void reset(struct Chip8* chip8);
+void resetChip8(struct Chip8* chip8);
 
 void error(struct Chip8* chip8, char* format, ...);
 

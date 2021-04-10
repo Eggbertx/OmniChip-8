@@ -15,10 +15,12 @@ WINDOW* debugWindow;
 struct termios old_tio;
 struct termios new_tio;
 int debug_line = 0;
+int valid_size = 0;
 
 uchar initScreen(void) {
 	ioctl(0, TIOCGWINSZ, &max); /* get console size to make sure the console is big enough */
-	if(max.ws_col < SCREEN_WIDTH || max.ws_row < SCREEN_HEIGHT) {
+	valid_size = (max.ws_col >= SCREEN_WIDTH && max.ws_row >= SCREEN_HEIGHT);
+	if(!valid_size) {
 		printf("Error: console too small. Must be at least %d rows and %d columns.\n", SCREEN_HEIGHT, SCREEN_WIDTH);
 		printf("Currently: %d rows and %d columns.\n", max.ws_row, max.ws_col);
 		return 1;
@@ -163,6 +165,9 @@ void addrInfo(struct Chip8* chip8, char* format, ...) {
 }
 
 void cleanup(void) {
+	if(!valid_size)
+		/* the terminal width appears to be 0 columns, safe to assume no cleanup is needed */
+		return; 
 	tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
 	endwin();
 }

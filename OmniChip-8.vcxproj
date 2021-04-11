@@ -79,6 +79,16 @@
     <TargetName>oc8</TargetName>
     <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>copy $(OutDir)\$(TargetFileName) $(TargetFileName)</Command>
+      <Message>Making a copy of oc8.exe</Message>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command>copy $(OutDir)\SDL2.dll SDL2.dll</Command>
+      <Message>Making a copy of SDL2.dll</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;SDL_IO;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

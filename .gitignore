@@ -5,6 +5,8 @@ dumps/
 .vs/
 build/
 packages/
-*.vcxproj.user*
+*.user*
 src/*.s
 src/*.o
+zcc*
+/SDL*

@@ -73,20 +73,21 @@
     <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>oc8</TargetName>
     <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>.\lib\sdl2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\lib\sdl2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>oc8</TargetName>
     <IntDir>build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>.\lib\sdl2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\lib\sdl2\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PostBuildEvent>
-      <Command>copy $(OutDir)\$(TargetFileName) $(TargetFileName)</Command>
-      <Message>Making a copy of oc8.exe</Message>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Command>copy $(OutDir)\SDL2.dll SDL2.dll</Command>
-      <Message>Making a copy of SDL2.dll</Message>
+      <Command>copy $(OutDir)\$(TargetFileName) $(TargetFileName)
+copy $(OutDir)\$(TargetFileName) $(TargetFileName) &amp;&amp; copy .\lib\sdl2\lib\x64\SDL2.dll SDL2.dll </Command>
+      <Message>Copying SDL2 and oc8 to root directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,6 +129,9 @@
       <WarningLevel>Level3</WarningLevel>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>.\lib\sdl2\lib\x64\SDL2.lib;.\lib\sdl2\lib\x64\SDL2main.lib;.\lib\sdl2\lib\x64\SDL2test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,6 +141,9 @@
       <WarningLevel>Level3</WarningLevel>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>.\lib\sdl2\lib\x64\SDL2.lib;.\lib\sdl2\lib\x64\SDL2main.lib;.\lib\sdl2\lib\x64\SDL2test.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\chip8.c" />
@@ -152,15 +159,4 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets" Condition="Exists('packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets')" />
-    <Import Project="packages\sdl2.2.0.5\build\native\sdl2.targets" Condition="Exists('packages\sdl2.2.0.5\build\native\sdl2.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets'))" />
-    <Error Condition="!Exists('packages\sdl2.2.0.5\build\native\sdl2.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2.2.0.5\build\native\sdl2.targets'))" />
-  </Target>
 </Project>

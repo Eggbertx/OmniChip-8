@@ -86,14 +86,26 @@ def out_file(platform, windows):
 		oc8_out += ".gb"
 	elif platform == "emscripten":
 		oc8_out += ".html"
-	else:
+	elif not "native":
 		fatal_print("Unsupported platform " + platform)
 
 	return oc8_out
 
+def term_type():
+	if "FrameworkVersion" in os.environ:
+		return "msbuild"
+	if "OS" in os.environ and "MINGW_PREFIX":
+		return "mingw"
+	if "TERM" in os.environ:
+		return "unix"
+	if "OS" in os.environ:
+		return "cmd"
+	return "other"
 
 def build(platform = "native", library = "sdl", debugging = False):
-	msbuild = "FrameworkVersion" in os.environ and platform == "native"
+	term = term_type()
+	msbuild = term == "msbuild" and platform == "native"
+
 	if platform == "native" and not msbuild and "TERM" not in os.environ:
 		fatal_print(
 			"You appear to be in Windows, but are not using the Visual Studio command prompt\n" +
@@ -123,16 +135,22 @@ def build(platform = "native", library = "sdl", debugging = False):
 		if not in_pathenv("cc"):
 			fatal_print("Unable to find the cc compiler")
 
+		includes_path = "/usr/include"
+		if term == "mingw":
+			includes_path = "/mingw64/include"
+
 		lib = "-lSDL2"
 		if library == "curses":
 			lib = "-lcurses"
+		elif library == "sdl":
+			includes_path += "/SDL2"
 
 		sources.append("src/io_{}.c".format(library))
 
-		cmd = "cc -o {oc8_out} -D{io_const}_IO {inc_dirs} {cflags} {sources} {lib}".format(
+		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
-			inc_dirs = "-I/usr/include/SDL2",
+			includes_path = "-I" + includes_path,
 			cflags = "-g -pedantic -Wall -std=c89 -D_POSIX_SOURCE",
 			sources = " ".join(sources),
 			lib = lib
@@ -167,7 +185,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*")
+	del_files = glob.glob("oc8*") + ["SDL2.dll"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 
@@ -189,10 +207,6 @@ if __name__ == "__main__":
 		exit(2)
 	elif action == "build":
 		default_library = "sdl"
-		if "OS" in os.environ and "TERM" in os.environ:
-			# default to curses when using Cygwin
-			default_library = "curses"
-
 		parser.add_argument("--platform", help = "the platform to build for, valid values are c64, gb, and native (default)", default = "native")
 		parser.add_argument("--library", help = "the library to use when platform = native. Valid values are sdl and curses", default = default_library)
 		parser.add_argument("--debug", help = "build OmniChip-8 with debugging symbols", default = True)

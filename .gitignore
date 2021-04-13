@@ -10,3 +10,4 @@ src/*.s
 src/*.o
 zcc*
 /SDL*
+/lib/*

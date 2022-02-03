@@ -12,7 +12,7 @@
 uchar loadROM(struct Chip8* chip8, char* file) {
 	ushort i = 0;
 
-	#if !defined (__CC65__) && !defined(EMSCRIPTEN_IO) && !defined(GB_IO)
+	#ifndef __EMBED_ROM__
 		FILE *rom_file;
 
 		rom_file = fopen(file, "rb");

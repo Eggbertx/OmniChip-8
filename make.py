@@ -84,6 +84,10 @@ def out_file(platform, windows):
 		oc8_out += "-" + platform + ".prg"
 	elif platform == "gb":
 		oc8_out += ".gb"
+	elif platform == "ti83":
+		# TODO: make this actually useful, TI-8x support
+		# hasn't been implemented yet
+		oc8_out += ".83p"
 	elif platform == "emscripten":
 		oc8_out += ".html"
 	elif not "native":
@@ -147,7 +151,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 
 		sources.append("src/io_{}.c".format(library))
 
-		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {cflags} {sources} {lib}".format(
+		cmd = "cc -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {includes_path} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
 			includes_path = "-I" + includes_path,
@@ -158,14 +162,17 @@ def build(platform = "native", library = "sdl", debugging = False):
 	elif platform == "cc65":
 		if not in_pathenv("cl65"):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
-	elif platform == "gb":
+	elif platform == "gb" or platform == "ti83":
 		if not in_pathenv("zcc"):
-			fatal_print("Unable to find the z88dk development kit, required to build for the GameBoy")
+			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
 
 		sources.append("src/io_{}.c".format(platform))
-		cmd = "zcc +gb -create-app -o oc8.gb -DGB_IO {sources}".format(
+		cmd = "zcc +{platform} -create-app -o {oc8_out} -D__EMBED_ROM__ {sources}".format(
+			platform = platform,
+			oc8_out = oc8_out,
 			sources = " ".join(sources)
 		)
+	
 	elif platform == "emscripten":
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")
@@ -185,7 +192,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*") + ["SDL2.dll"]
+	del_files = glob.glob("oc8*") + ["zcc_opt.def", "SDL2.dll"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 

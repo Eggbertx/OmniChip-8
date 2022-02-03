@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	if(argc != 2) {
-	#if !defined (__CC65__) && !defined(EMSCRIPTEN_IO) && !defined(GB_IO)
+	#ifdef __EMBED_ROM__
 		oc8log("usage: %s rompath\n", argv[0]);
 		goto finish;
 	#endif

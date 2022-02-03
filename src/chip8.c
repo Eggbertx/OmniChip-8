@@ -31,7 +31,7 @@ uchar font[80] = {
 void resetChip8(struct Chip8* chip8) {
 	chip8->status = STATUS_RUNNING;
 	chip8->PC = ROM_START_ADDR;
-#ifndef GB_IO /* because z88dk doesn't appear to have time() or clock() for the GameBoy platform */
+#if defined(GB_IO) || defined(TI8X_IO) /* because z88dk doesn't appear to have time() or clock() for gb or ti83 */
 	srand(time(NULL));
 #endif
 	memset(chip8->memory, 0, sizeof(chip8->memory));

@@ -151,7 +151,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 
 		sources.append("src/io_{}.c".format(library))
 
-		cmd = "cc -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {includes_path} {cflags} {sources} {lib}".format(
+		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
 			includes_path = "-I" + includes_path,
@@ -159,20 +159,29 @@ def build(platform = "native", library = "sdl", debugging = False):
 			sources = " ".join(sources),
 			lib = lib
 		)
-	elif platform == "cc65":
+	elif platform == "c64" or platform == "apple2":
 		if not in_pathenv("cl65"):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
+		sources.append("src/io_{}.c".format(platform))
+
+		cmd = "cl65 -o {oc8_out} -t {platform} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
+			oc8_out = oc8_out,
+			platform = platform,
+			io_const = platform.upper(),
+			sources = " ".join(sources)
+		)
 	elif platform == "gb" or platform == "ti83":
 		if not in_pathenv("zcc"):
 			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
+		io_const = platform.upper()
 
 		sources.append("src/io_{}.c".format(platform))
-		cmd = "zcc +{platform} -create-app -o {oc8_out} -D__EMBED_ROM__ {sources}".format(
+		cmd = "zcc +{platform} -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
 			platform = platform,
 			oc8_out = oc8_out,
+			io_const = io_const,
 			sources = " ".join(sources)
 		)
-	
 	elif platform == "emscripten":
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")

@@ -31,7 +31,7 @@ uchar font[80] = {
 void resetChip8(struct Chip8* chip8) {
 	chip8->status = STATUS_RUNNING;
 	chip8->PC = ROM_START_ADDR;
-#if defined(GB_IO) || defined(TI8X_IO) /* because z88dk doesn't appear to have time() or clock() for gb or ti83 */
+#if !defined(GB_IO) && !defined(TI8X_IO) /* because z88dk doesn't appear to have time() or clock() for gb or ti83 */
 	srand(time(NULL));
 #endif
 	memset(chip8->memory, 0, sizeof(chip8->memory));
@@ -45,9 +45,9 @@ void resetChip8(struct Chip8* chip8) {
 	chip8->currentKey = -1;
 }
 
-uchar initChip8(struct Chip8* chip8, char* rom) {
+uchar initChip8(struct Chip8* chip8) {
 	resetChip8(chip8);
-	return loadROM(chip8, rom);
+	return loadROM(chip8, chip8->romPath);
 }
 
 void clearDisplay(struct Chip8* chip8) {
@@ -91,23 +91,23 @@ void dumpBytes(uchar* bytes, short filesize, char* filename) {
 }
 
 void printStatus(struct Chip8* chip8) {
+#ifdef PRINT_DEBUG
 	int r = 0;
 	int s = 0;
-	#ifdef PRINT_DEBUG
-		oc8log("V registers:\n");
-		for(r = 0; r < 16; r++) {
-			oc8log("\tV%X: %x\n", r, chip8->V[r]);
-		}
-		oc8log("Program counter: %d\n", chip8->PC);
-		oc8log("Address register (I): %d\n", chip8->I);
-		oc8log("Delay timer: %d\nSound timer: %d\n", chip8->delayTimer, chip8->soundTimer);
-		oc8log("chip8->drawFlag: %d\n", chip8->drawFlag);
-		oc8log("Stack:\n");
-		for(s = 0; s < 16; s++) {
-			oc8log("\tstack[%d]: %x\n", s, chip8->stack[s]);
-		}
-		oc8log("Stack pointer: %d\n", chip8->stackPointer);
-	#endif
+	oc8log("V registers:\n");
+	for(r = 0; r < 16; r++) {
+		oc8log("\tV%X: %x\n", r, chip8->V[r]);
+	}
+	oc8log("Program counter: %d\n", chip8->PC);
+	oc8log("Address register (I): %d\n", chip8->I);
+	oc8log("Delay timer: %d\nSound timer: %d\n", chip8->delayTimer, chip8->soundTimer);
+	oc8log("chip8->drawFlag: %d\n", chip8->drawFlag);
+	oc8log("Stack:\n");
+	for(s = 0; s < 16; s++) {
+		oc8log("\tstack[%d]: %x\n", s, chip8->stack[s]);
+	}
+	oc8log("Stack pointer: %d\n", chip8->stackPointer);
+#endif
 }
 
 void runCycles(void* chip8_ptr) {

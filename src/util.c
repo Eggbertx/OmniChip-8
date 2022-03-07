@@ -12,26 +12,26 @@
 uchar loadROM(struct Chip8* chip8, char* file) {
 	ushort i = 0;
 
-	#ifndef __EMBED_ROM__
-		FILE *rom_file;
+#ifndef __EMBED_ROM__
+	FILE *rom_file;
 
-		rom_file = fopen(file, "rb");
-		if(!rom_file) {
-			fprintf(stderr, "Error: couldn\'t load %s\n", file);
-			return 1;
-		}
-		fseek(rom_file, 0L, SEEK_END);
-		chip8->romSize = ftell(rom_file);
-		if(chip8->romSize == 0) {
-			return 1;
-		}
-		printf("Loading %s (%d bytes)\n", file, chip8->romSize);
-		rewind(rom_file);
+	rom_file = fopen(file, "rb");
+	if(!rom_file) {
+		fprintf(stderr, "Error: couldn\'t load %s\n", file);
+		return 1;
+	}
+	fseek(rom_file, 0L, SEEK_END);
+	chip8->romSize = ftell(rom_file);
+	if(chip8->romSize == 0) {
+		return 1;
+	}
+	printf("Loading %s (%d bytes)\n", file, chip8->romSize);
+	rewind(rom_file);
 
-		chip8->romBytes = (uchar *)malloc(chip8->romSize+1);
-		fread(chip8->romBytes, 1, chip8->romSize,rom_file);
-		fclose(rom_file);
-	#else
+	chip8->romBytes = (uchar *)malloc(chip8->romSize+1);
+	fread(chip8->romBytes, 1, chip8->romSize,rom_file);
+	fclose(rom_file);
+#else
 	/* TODO: replace this with reading bytes from executable, tape, etc */
 	/* uchar ROM[] = {
 		0xa2, 0x1e, 0xc2, 0x01, 0x32, 0x01, 0xa2, 0x1a, 0xd0, 0x14, 0x70, 0x04,
@@ -55,8 +55,7 @@ uchar loadROM(struct Chip8* chip8, char* file) {
 	uchar ROM_len = 132;
 	chip8->romSize = ROM_len;
 	chip8->romBytes = ROM;
-
-	#endif
+#endif
 	for(i = 0; i < 80; i++) {
 		chip8->memory[FONT_START_ADDR + i] = font[i];
 	}

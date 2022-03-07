@@ -37,6 +37,7 @@
 
 struct Chip8 {
 	uchar status;
+	char* romPath;
 	uchar* romBytes;
 	ushort romSize;
 	uchar V[16];		/* registers: VF is used as carry for arithmetic and sprite collisions */
@@ -59,7 +60,7 @@ struct Chip8 {
 
 extern uchar font[80];
 
-uchar initChip8(struct Chip8* chip8, char* rom);
+uchar initChip8(struct Chip8* chip8);
 
 void dumpBytes(uchar* bytes, short filesize, char* filename);
 

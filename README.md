@@ -23,10 +23,17 @@ Supported platforms
 ------ 
 ## Mostly done
  * Desktop SDL
+
+![SDL screenshot](./screenshots/sdl.png)
  * (n)curses
+
+![ncurses screenshot](./screenshots/curses.png)
  * Commodore 64
+
+![Commodore 64 screenshot](./screenshots/c64.png)
  * GameBoy
 
+![Gameboy screenshot](./screenshots/gb.png)
 ## Planned
  * WebAssembly + SDL
  * TI-8x
@@ -38,6 +45,3 @@ Supported platforms
 ## Maybe/hopefully
  * Magic-1
  * Bare metal x86
-
-# Screenshot
-![Screenshots](screenshot.png)

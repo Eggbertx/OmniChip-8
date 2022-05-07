@@ -1,0 +1,65 @@
+        ld          i, logo
+
+        ld          v0, 15
+        ld          v1, 12
+        ld          v2, 8
+
+        ; O
+        drw         v0, v1, 8
+        add         v0, 10
+        add         i, v2
+
+        ; C
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; -
+        drw         v0, v1, 4
+        add         v0, 8
+        add         i, v2
+
+        ; 8
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; infinite loop
+loop    jp          loop
+
+
+logo    byte %01111110
+        byte %10000001
+        byte %10000001
+        byte %10000001
+        byte %10000001
+        byte %10000001
+        byte %10000001
+        byte %01111110
+
+        byte %01111110
+        byte %10000001
+        byte %10000000
+        byte %10000000
+        byte %10000000
+        byte %10000000
+        byte %10000001
+        byte %01111110
+
+        byte %00000000
+        byte %00000000
+        byte %00000000
+        byte %01111100
+        byte %00000000
+        byte %00000000
+        byte %00000000
+        byte %00000000
+
+        byte %01111110
+        byte %10000001
+        byte %10000001
+        byte %01111110
+        byte %10000001
+        byte %10000001
+        byte %10000001
+        byte %01111110

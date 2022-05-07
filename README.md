@@ -45,3 +45,8 @@ Supported platforms
 ## Maybe/hopefully
  * Magic-1
  * Bare metal x86
+
+
+Games
+------
+All of the games in `games/` are public domain, and came from [here](https://www.zophar.net/pdroms/chip8/chip-8-games-pack.html) except for omnichip8, oc8, and their respective .c8 sources.

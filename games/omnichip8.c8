@@ -1,0 +1,155 @@
+        ld          i, omni
+
+        ld          v0, 15
+        ld          v1, 7
+        ld          v2, 8
+
+        ; O
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; M
+        drw         v0, v1, 8
+        add         v0, 9
+        add         i, v2
+
+        ; N
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; I
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+
+        ld          i, chip8
+        ld          v0, 9
+        ld          v1, 17
+        ld          v2, 8
+
+        ; C
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; H
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; I
+        drw         v0, v1, 8
+        add         v0, 8
+        add         i, v2
+
+        ; P
+        drw         v0, v1, 8
+        add         v0, 6
+        add         i, v2
+
+        ; -
+        drw         v0, v1, 8
+        add         v0, 6
+        add         i, v2
+
+        ; 8
+        drw         v0, v1, 8
+        add         v0, 4
+        add         i, v2
+
+        ; infinite loop
+loop    jp          loop
+
+
+omni    byte %0111110 ; O
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %0111110
+
+        byte %1000001 ; M
+        byte %1100011
+        byte %1010101
+        byte %1001001
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %1000001
+
+        byte %10000001 ; N
+        byte %11000001
+        byte %10100001
+        byte %10010001
+        byte %10001001
+        byte %10000101
+        byte %10000011
+        byte %10000001
+
+        byte %1111111 ; I
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %1111111
+
+chip8   byte %0111110 ; C
+        byte %1000001
+        byte %1000000
+        byte %1000000
+        byte %1000000
+        byte %1000000
+        byte %1000001
+        byte %0111110
+
+        byte %1000001 ; H
+        byte %1000001
+        byte %1000001
+        byte %1111111
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %1000001
+
+        byte %1111111 ; I
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %0001000
+        byte %1111111
+
+        byte %0111110 ; P
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %1111110
+        byte %1000000
+        byte %1000000
+        byte %1000000
+
+        byte %0000000 ; -
+        byte %0000000
+        byte %0000000
+        byte %0000000
+        byte %0011100
+        byte %0000000
+        byte %0000000
+        byte %0000000
+
+        byte %0111110 ; 8
+        byte %1000001
+        byte %1000001
+        byte %0111110
+        byte %1000001
+        byte %1000001
+        byte %1000001
+        byte %0111110

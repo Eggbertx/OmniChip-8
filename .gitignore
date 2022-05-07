@@ -1,6 +1,5 @@
-games/
 .vscode/
-oc8*
+/oc8*
 dumps/
 .vs/
 build/

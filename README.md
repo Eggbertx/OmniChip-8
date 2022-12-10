@@ -6,8 +6,12 @@ Building instructions
 -----
 ## Desktop (SDL)
 Run `python make.py`. In Windows, it is able to use Visual Studio (via the msbuild command) or mingw.
-### Visual Studio/msbuild
-If you are using Visual Studio/msbuild, you need to get the SDL headers and library. Install the headers to `lib/sdl2/include`. Install the static .lib files and the dll file to `lib/sdl2/lib/x64`. You can just download the development library [here](http://libsdl.org/download-2.0.php) and drop the `include` and `lib` subdirectories into `lib/sdl2/`
+### Visual Studio
+Visual Studio should automatically download the SDL2 nuget packages when you build the project.
+### msbuild (Developer Command Prompt for VS 20XX)
+If you have (NuGet)[https://www.nuget.org/] installed, you can run `nuget restore` to install the SDL2 nuget dependency packages. Otherwise, you will either need to install NuGet or open OmniChip-8.sln in Visual Studio and build it once to have it download the packages.
+
+After you have them installed, you can run `python make.py build`
 ### mingw
 If you are using mingw, you need to run `pacman -S base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` before using make.py.
 

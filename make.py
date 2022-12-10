@@ -196,6 +196,12 @@ def build(platform = "native", library = "sdl", debugging = False):
 	status = run_cmd(cmd, print_output = True, realtime = True, print_command = True)
 	if status[1] != 0:
 		fatal_print("Failed building OmniChip-8, see command output for details")
+	
+	if msbuild:
+		out_dir = path.join("./build/x64/", "Debug" if debugging else "Release")
+		fs_action("copy", path.join(out_dir, "SDL2.dll"), "SDL2.dll")
+		fs_action("copy", path.join(out_dir, "oc8.exe"), "oc8.exe")
+		
 	print("Built OmniChip-8 successfully")
 
 def clean():

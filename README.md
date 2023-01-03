@@ -9,7 +9,7 @@ Run `python make.py`. In Windows, it is able to use Visual Studio (via the msbui
 ### Visual Studio
 Visual Studio should automatically download the SDL2 nuget packages when you build the project.
 ### msbuild (Developer Command Prompt for VS 20XX)
-If you have (NuGet)[https://www.nuget.org/] installed, you can run `nuget restore` to install the SDL2 nuget dependency packages. Otherwise, you will either need to install NuGet or open OmniChip-8.sln in Visual Studio and build it once to have it download the packages.
+If you have [NuGet](https://www.nuget.org/) installed, you can run `nuget restore` to install the SDL2 nuget dependency packages. Otherwise, you will either need to install NuGet or open OmniChip-8.sln in Visual Studio and build it once to have it download the packages.
 
 After you have them installed, you can run `python make.py build`
 ### mingw

@@ -146,7 +146,7 @@ uchar getKey(void) {
 }
 
 void delay(ushort milliseconds) {
-	usleep(milliseconds * 1000);
+	napms(milliseconds);
 }
 
 void drawPixel(uchar x, uchar y) {

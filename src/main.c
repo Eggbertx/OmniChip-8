@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 
 	chip8.romPath = argv[1];
 	if (initChip8(&chip8) > 0) {
-		oc8log("ERROR: Swent wrong while loading %s\n", argv[1]);
+		oc8log("ERROR: Something went wrong while loading %s\n", argv[1]);
 		goto finish;
 	}
 

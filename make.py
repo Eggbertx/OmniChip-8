@@ -151,11 +151,14 @@ def build(platform = "native", library = "sdl", debugging = False):
 
 		sources.append("src/io_{}.c".format(library))
 
+		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE"
+		if debugging:
+			cflags = "-g " + cflags
 		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
 			includes_path = "-I" + includes_path,
-			cflags = "-g -pedantic -Wall -std=c89 -D_POSIX_SOURCE",
+			cflags = cflags,
 			sources = " ".join(sources),
 			lib = lib
 		)
@@ -231,7 +234,7 @@ if __name__ == "__main__":
 		default_library = "sdl"
 		parser.add_argument("--platform", help = "the platform to build for, valid values are c64, gb, and native (default)", default = "native")
 		parser.add_argument("--library", help = "the library to use when platform = native. Valid values are sdl and curses", default = default_library)
-		parser.add_argument("--debug", help = "build OmniChip-8 with debugging symbols", default = True)
+		parser.add_argument("--debug", help = "build OmniChip-8 with debugging symbols", default = False, action="store_true")
 		args = parser.parse_args()
 		build(args.platform, args.library, args.debug)
 	elif action == "clean":

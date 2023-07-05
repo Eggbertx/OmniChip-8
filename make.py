@@ -211,9 +211,10 @@ def run_tests():
 	gtest_libs_status = run_cmd("pkg-config --libs gtest_main", print_output=False)
 	if gtest_libs_status[1] != 0:
 		fatal_print("Unable to get gtest package info: " + gtest_libs_status[0])
-	build_test_cmd = "c++ -o oc8_test_chip8 {} -Wno-write-strings src/tests/chip8_test.cc src/chip8.c src/io_template.c src/util.c".format(gtest_libs_status[0])
-	run_cmd(build_test_cmd, True, True, True)
-	run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
+	build_test_cmd = "c++ -o oc8_test_chip8 {} -Wno-write-strings -fdiagnostics-color=always src/tests/chip8_test.cc src/chip8.c src/io_template.c src/util.c".format(gtest_libs_status[0])
+	if run_cmd(build_test_cmd, True, True, True)[1] == 0:
+		run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
+
 
 def clean():
 	print("Cleaning up")

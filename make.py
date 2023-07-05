@@ -207,6 +207,14 @@ def build(platform = "native", library = "sdl", debugging = False):
 		
 	print("Built OmniChip-8 successfully")
 
+def run_tests():
+	gtest_libs_status = run_cmd("pkg-config --libs gtest_main", print_output=False)
+	if gtest_libs_status[1] != 0:
+		fatal_print("Unable to get gtest package info: " + gtest_libs_status[0])
+	build_test_cmd = "c++ -o oc8_test_chip8 {} -Wno-write-strings src/tests/chip8_test.cc src/chip8.c src/io_template.c src/util.c".format(gtest_libs_status[0])
+	run_cmd(build_test_cmd, True, True, True)
+	run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
+
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
@@ -223,7 +231,7 @@ if __name__ == "__main__":
 	if(action.startswith("-") == False):
 		sys.argv.insert(1, action)
 
-	valid_actions = ("build", "clean")
+	valid_actions = ("build", "clean", "test"	)
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
 	parser.add_argument("action", nargs = 1, default = "build", choices = valid_actions)
 
@@ -237,6 +245,8 @@ if __name__ == "__main__":
 		parser.add_argument("--debug", help = "build OmniChip-8 with debugging symbols", default = False, action="store_true")
 		args = parser.parse_args()
 		build(args.platform, args.library, args.debug)
+	elif action == "test":
+		run_tests()
 	elif action == "clean":
 		clean()
 		exit(0)

@@ -112,6 +112,11 @@ void printStatus(struct Chip8* chip8) {
 
 void runCycles(void* chip8_ptr) {
 	struct Chip8* chip8 = (struct Chip8*)chip8_ptr;
+
+}
+
+void doCycle(void* chip8_ptr) {
+	struct Chip8* chip8 = (struct Chip8*)chip8_ptr;
 	uchar x = 0;	/* -X-- */
 	uchar y = 0;	/* --Y- */
 	ushort nnn = 0;	/* -nnn */

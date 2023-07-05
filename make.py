@@ -151,7 +151,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 
 		sources.append("src/io_{}.c".format(library))
 
-		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE"
+		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE -fdiagnostics-color=always "
 		if debugging:
 			cflags = "-g " + cflags
 		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {cflags} {sources} {lib}".format(

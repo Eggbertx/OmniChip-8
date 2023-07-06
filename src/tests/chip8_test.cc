@@ -30,6 +30,17 @@ class Chip8Test : public ::testing::Test {
 				chip8.memory[ROM_START_ADDR + i] = chip8.romBytes[i];
 			}
 		}
+
+		bool isScreenBlank() {
+			for(int y = 0; y < 32; y++) {
+				for(int x = 0; x < 64; x++) {
+					if(chip8.screen[x+y*64] != 0) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 };
 }
 
@@ -38,23 +49,16 @@ TEST_F(Chip8Test, TestSize) {
 	ASSERT_EQ(chip8.romSize, rom_omnichip8_size);
 }
 
-bool isScreenBlank(struct Chip8* chip8) {
-	for(int y = 0; y < 32; y++) {
-		for(int x = 0; x < 64; x++) {
-			if(chip8->screen[x+y*64] != 0) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
+
 
 TEST_F(Chip8Test, TestCls) {
 	loadROM("games/clearscreen", rom_blankScreen);
 	ASSERT_EQ(chip8.romSize, rom_blankScreen_size);
+	ASSERT_TRUE(isScreenBlank());
 	chip8.screen[32] = 0x1; // put pixel in arbitrary location to be cleared
-	doCycle(&chip8);
-	ASSERT_TRUE(isScreenBlank(&chip8));
+	ASSERT_FALSE(isScreenBlank());
+	doCycle(&chip8, 1);
+	ASSERT_TRUE(isScreenBlank());
 }
 
 GTEST_API_ int main(int argc, char** argv) {

@@ -79,7 +79,7 @@ uchar getKey(void) {
 
 schar isPressed(uchar key) {
 	const uchar* state = SDL_GetKeyboardState(NULL);
-	printf("Key : %d\n", key);
+	/* printf("Key : %d\n", key); */
 	switch(key) {
 		case 0x1:
 			return state[SDL_SCANCODE_1];

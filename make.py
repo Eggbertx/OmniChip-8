@@ -207,13 +207,18 @@ def build(platform = "native", library = "sdl", debugging = False):
 		
 	print("Built OmniChip-8 successfully")
 
-def run_tests():
+def run_tests(print_opcodes = False):
 	gtest_libs_status = run_cmd("pkg-config --libs gtest_main", print_output=False)
 	if gtest_libs_status[1] != 0:
 		fatal_print("Unable to get gtest package info: " + gtest_libs_status[0])
-	build_test_cmd = "c++ -o oc8_test_chip8 {} -Wno-write-strings -fdiagnostics-color=always src/tests/chip8_test.cc src/chip8.c src/io_template.c src/util.c".format(gtest_libs_status[0])
+	build_test_cmd = "c++ -o oc8_test_chip8 -g {} {} -Wno-write-strings -fdiagnostics-color=always src/tests/chip8_test.cc src/chip8.c src/io_template.c src/util.c".format(
+		"-DPRINT_DEBUG" if print_opcodes else "",
+		gtest_libs_status[0]
+	)
 	if run_cmd(build_test_cmd, True, True, True)[1] == 0:
-		run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
+		test_status = run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
+		if test_status[1] != 0:
+			print("Test exited with error code {}".format(test_status[1]))
 
 
 def clean():
@@ -247,7 +252,9 @@ if __name__ == "__main__":
 		args = parser.parse_args()
 		build(args.platform, args.library, args.debug)
 	elif action == "test":
-		run_tests()
+		parser.add_argument("--print-opcodes", help = "print opcodes when testing the CHIP-8 ROM execution", default = False, action = "store_true")
+		args = parser.parse_args()
+		run_tests(args.print_opcodes)
 	elif action == "clean":
 		clean()
 		exit(0)

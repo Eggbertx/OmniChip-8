@@ -1,3 +1,6 @@
+#include <stdarg.h>
+#include <stdio.h>
+
 #include "io.h"
 #include "chip8.h"
 
@@ -45,5 +48,12 @@ void cleanup(void) {
 }
 
 void addrInfo(struct Chip8* chip8, char* format, ...) {
+	va_list args;
 
+	printf("0x%04x: %04x, ", chip8->PC-2, chip8->opcode);
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+
+	printf("\n");
 }

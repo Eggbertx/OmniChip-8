@@ -183,10 +183,9 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				if(printOpcodes == 1) {
 					addrInfo(chip8, "RET");
 				}
-				chip8->PC = chip8->stack[chip8->stackPointer] + ROM_START_ADDR;
+				chip8->PC = chip8->stack[chip8->stackPointer] + ROM_START_ADDR + 2;
 				chip8->stackPointer--;
 			} else {
-				error(chip8, "Unrecognized opcode: %04x at %04x\n", chip8->opcode, chip8->PC);
 				goto unrecognized_opcode;
 			}
 			break;
@@ -434,7 +433,6 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 		}
 		break;
 		default:
-			error(chip8, "Unrecognized opcode: %04x at %04x\n", chip8->opcode, chip8->PC);
 			goto unrecognized_opcode;
 	}
 	

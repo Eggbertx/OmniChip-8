@@ -224,7 +224,7 @@ def run_tests(print_opcodes = False):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*") + ["zcc_opt.def", "SDL2.dll"]
+	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 

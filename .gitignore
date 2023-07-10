@@ -10,3 +10,4 @@ src/*.o
 zcc*
 /SDL*
 /lib/*
+**/x64/

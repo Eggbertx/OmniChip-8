@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "../chip8.h"
+extern "C" {
+	#include "../chip8.h"
+}
 #include "testing_roms.h"
 
 #define __EMBED_ROM__ 1
@@ -60,8 +62,6 @@ TEST_F(Chip8Test, TestSize) {
 	loadROM("games/omnichip8", rom_omnichip8);
 	ASSERT_EQ(chip8.romSize, rom_omnichip8_size);
 }
-
-
 
 TEST_F(Chip8Test, TestCLS) {
 	loadROM("games/clearscreen", rom_blankScreen);

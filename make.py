@@ -80,14 +80,14 @@ def out_file(platform, windows):
 	oc8_out = "oc8"
 	if windows and platform == "native":
 		oc8_out += ".exe"
-	elif platform == "c64" or platform == "apple2":
+	elif platform in ("c64", "sim6502"):
 		oc8_out += "-" + platform + ".prg"
 	elif platform == "gb":
 		oc8_out += ".gb"
 	elif platform == "ti83":
-		# TODO: make this actually useful, TI-8x support
-		# hasn't been implemented yet
+		# TODO: make this actually useful
 		oc8_out += ".83p"
+		fatal_print("TI-8x support hasn't been implemented yet")
 	elif platform == "emscripten":
 		oc8_out += ".html"
 	elif not "native":
@@ -162,7 +162,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 			sources = " ".join(sources),
 			lib = lib
 		)
-	elif platform == "c64" or platform == "apple2":
+	elif platform in ("c64", "sim6502"):
 		if not in_pathenv("cl65"):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
 		sources.append("src/io_{}.c".format(platform))
@@ -173,7 +173,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 			io_const = platform.upper(),
 			sources = " ".join(sources)
 		)
-	elif platform == "gb" or platform == "ti83":
+	elif platform in ("gb", "ti83"):
 		if not in_pathenv("zcc"):
 			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
 		io_const = platform.upper()
@@ -237,22 +237,35 @@ if __name__ == "__main__":
 	if(action.startswith("-") == False):
 		sys.argv.insert(1, action)
 
-	valid_actions = ("build", "clean", "test"	)
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
-	parser.add_argument("action", nargs = 1, default = "build", choices = valid_actions)
+	parser.add_argument("action",
+		nargs = 1,
+		default = "build",
+		choices = ("build", "clean", "test"))
 
 	if action == "--help" or action == "-h":
 		parser.print_help()
 		exit(2)
 	elif action == "build":
-		default_library = "sdl"
-		parser.add_argument("--platform", help = "the platform to build for, valid values are c64, gb, and native (default)", default = "native")
-		parser.add_argument("--library", help = "the library to use when platform = native. Valid values are sdl and curses", default = default_library)
-		parser.add_argument("--debug", help = "build OmniChip-8 with debugging symbols", default = False, action="store_true")
+		parser.add_argument("--platform",
+			help="the platform to build for",
+			choices=("c64", "gb", "native", "sim6502"),
+			default="native")
+		parser.add_argument("--library",
+			help="the library to use when platform = native.",
+			choices=("sdl", "curses"),
+			default="sdl")
+		parser.add_argument("--debug",
+			help="build OmniChip-8 with debugging symbols",
+			default=False,
+			action="store_true")
 		args = parser.parse_args()
 		build(args.platform, args.library, args.debug)
 	elif action == "test":
-		parser.add_argument("--print-opcodes", help = "print opcodes when testing the CHIP-8 ROM execution", default = False, action = "store_true")
+		parser.add_argument("--print-opcodes",
+			help="print opcodes when testing the CHIP-8 ROM execution",
+			default=False,
+			action="store_true")
 		args = parser.parse_args()
 		run_tests(args.print_opcodes)
 	elif action == "clean":

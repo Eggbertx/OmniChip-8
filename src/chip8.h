@@ -68,7 +68,10 @@ void printStatus(struct Chip8* chip8);
 
 void doCycle(struct Chip8* chip8, uchar printOpcodes);
 
-void runCycles(void* chip8_ptr, uchar printOpcodes);
+/* void runCycles(void* chip8_ptr, uchar printOpcodes);
+ */
+
+void drawScreen(struct Chip8* chip8);
 
 void clearDisplay(struct Chip8* chip8);
 

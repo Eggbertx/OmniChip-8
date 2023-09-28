@@ -19,6 +19,8 @@ If you are using mingw, you need to run `pacman -S base-devel mingw-w64-x86_64-g
 Run `python make.py build --library curses`
 ## Commodore 64
 Run `python make.py build --platform c64`
+## sim65 (requires cc65)
+Run `python make.py build --platform sim6502`
 ## GameBoy
 Run `python make.py build --platform gb`
 
@@ -38,10 +40,14 @@ Supported platforms
  * GameBoy
 
 ![Gameboy screenshot](./screenshots/gb.png)
+
+ * sim65
+
+
 ## Planned
  * WebAssembly + SDL
  * TI-8x
- * Apple ][
+ * Apple II
  * NES
  * Sphere, via WebAssembly/Emscripten
  * MS-DOS/FreeDOS/DR-DOS

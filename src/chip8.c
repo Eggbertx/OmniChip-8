@@ -32,7 +32,7 @@ void resetChip8(struct Chip8* chip8) {
 	chip8->status = STATUS_RUNNING;
 	chip8->PC = ROM_START_ADDR;
 #if !defined(GB_IO) && !defined(TI83_IO) /* because z88dk doesn't appear to have time() or clock() for gb or ti83 */
-	srand(time(NULL));
+	srand(602310);
 #endif
 	memset(chip8->memory, 0, sizeof(chip8->memory));
 	memset(chip8->stack, 0, sizeof(chip8->stack));
@@ -108,28 +108,6 @@ void printStatus(struct Chip8* chip8) {
 	}
 	oc8log("Stack pointer: %d\n", chip8->stackPointer);
 #endif
-}
-
-void runCycles(void* chip8_ptr, uchar printOpcodes) {
-	struct Chip8* chip8 = (struct Chip8*)chip8_ptr;
-	uchar event = EVENT_NULL;
-	while(chip8->status != STATUS_STOPPED) {
-		event = getEvent();
-		if(event == EVENT_ESCAPE || event == EVENT_WINDOWCLOSE) {
-			chip8->status = STATUS_STOPPED;
-			return;
-		}
-
-		if(chip8->status == STATUS_PAUSED) {
-			drawScreen(chip8);
-			continue;
-		}
-
-		doCycle(chip8, printOpcodes);
-		if(chip8->drawFlag == 1) {
-			drawScreen(chip8);
-		}
-	}
 }
 
 void doCycle(struct Chip8* chip8, uchar printOpcodes) {

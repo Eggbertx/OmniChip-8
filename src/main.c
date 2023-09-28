@@ -12,6 +12,27 @@
 struct Chip8 chip8;
 uchar printOpcodes;
 
+void runCycles(uchar printOpcodes) {
+	uchar event = EVENT_NULL;
+	while(chip8.status != STATUS_STOPPED) {
+		event = getEvent();
+		if(event == EVENT_ESCAPE || event == EVENT_WINDOWCLOSE) {
+			chip8.status = STATUS_STOPPED;
+			return;
+		}
+
+		if(chip8.status == STATUS_PAUSED) {
+			drawScreen(&chip8);
+			continue;
+		}
+
+		doCycle(&chip8, printOpcodes);
+		if(chip8.drawFlag == 1) {
+			drawScreen(&chip8);
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
 #ifndef __EMBED_ROM__
 	printOpcodes = 0;
@@ -27,7 +48,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 #endif
-
 	if (initChip8(&chip8) > 0) {
 		oc8log("ERROR: Something went wrong while loading %s\n", chip8.romPath);
 		goto finish;
@@ -43,11 +63,10 @@ int main(int argc, char *argv[]) {
 		goto finish;
 	}
 
-
 #ifdef EMSCRIPTEN_IO
 	emscripten_set_main_loop_arg(runCycles, chip8, 60, 0);
 #else
-	runCycles(&chip8, printOpcodes);
+	runCycles(printOpcodes);
 #endif
 
 finish:

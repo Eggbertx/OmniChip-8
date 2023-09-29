@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 
-extern "C" {
-	#include "../chip8.h"
-}
+#include "../chip8.h"
 #include "testing_roms.h"
 
 #define __EMBED_ROM__ 1

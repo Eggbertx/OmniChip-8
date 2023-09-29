@@ -10,9 +10,36 @@ import shutil
 import subprocess
 import sys
 
+inc_tmpl = """#ifndef ROM_EMBED_H
+#define ROM_EMBED_H
+#ifdef __EMBED_ROM__
+unsigned char ROM[] = {{
+	{}
+}};
+unsigned int ROM_len = {};
+#endif
+#endif
+"""
+
 def fatal_print(msg):
 	print(msg)
 	exit(1)
+
+def create_embed(path: str):
+	hex_str = ""
+	with open(path, "rb") as f:
+		bytes = f.read()
+		a = 0
+		for b in range(len(bytes)):
+			hex_str += "0x%02x" % bytes[b]
+			hex_str += ", " if b < len(bytes) - 1 else ""
+			a += 1
+			if a == 12:
+				hex_str += "\n\t"
+				a = 0
+
+	with open("src/rom_embed.h", "wb") as r:
+		r.write(bytearray(inc_tmpl.format(hex_str, len(bytes)), "utf-8"))
 
 def fs_action(action, sourcefile, destfile = ""):
 	isfile = path.isfile(sourcefile) or path.islink(sourcefile)
@@ -75,7 +102,6 @@ def in_pathenv(file):
 			return True
 	return False
 
-
 def out_file(platform, windows):
 	oc8_out = "oc8"
 	if windows and platform == "native":
@@ -106,7 +132,9 @@ def term_type():
 		return "cmd"
 	return "other"
 
-def build(platform = "native", library = "sdl", debugging = False):
+def build(platform = "native", library = "sdl", debugging = False, embed = ""):
+	if embed != "":
+		create_embed(embed)
 	term = term_type()
 	msbuild = term == "msbuild" and platform == "native"
 
@@ -124,7 +152,7 @@ def build(platform = "native", library = "sdl", debugging = False):
 		debugging = False
 
 	cmd = ""
-	sources = ["src/chip8.c", "src/util.c", "src/main.c"]
+	sources = ["src/util.c", "src/chip8.c", "src/main.c"]
 
 	if msbuild:
 		# Visual Studio development console is being used
@@ -224,7 +252,7 @@ def run_tests(print_opcodes = False):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll"]
+	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 
@@ -259,8 +287,11 @@ if __name__ == "__main__":
 			help="build OmniChip-8 with debugging symbols",
 			default=False,
 			action="store_true")
+		parser.add_argument("--embed",
+			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
+			default="games/omnichip8")
 		args = parser.parse_args()
-		build(args.platform, args.library, args.debug)
+		build(args.platform, args.library, args.debug, args.embed)
 	elif action == "test":
 		parser.add_argument("--print-opcodes",
 			help="print opcodes when testing the CHIP-8 ROM execution",

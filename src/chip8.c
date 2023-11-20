@@ -32,7 +32,7 @@ void resetChip8(struct Chip8* chip8) {
 	chip8->status = STATUS_RUNNING;
 	chip8->PC = ROM_START_ADDR;
 #if !defined(GB_IO) && !defined(TI83_IO) /* because z88dk doesn't appear to have time() or clock() for gb or ti83 */
-	srand(602310);
+	srand(time(NULL));
 #endif
 	memset(chip8->memory, 0, sizeof(chip8->memory));
 	memset(chip8->stack, 0, sizeof(chip8->stack));
@@ -209,7 +209,7 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 			if(printOpcodes == 1) {
 				addrInfo(chip8, "SE V%X, V%X", x, y);
 			}
-			if(chip8->V[x] != chip8->V[y]) {
+			if(chip8->V[x] == chip8->V[y]) {
 				chip8->PC += 2;
 			}
 			break;

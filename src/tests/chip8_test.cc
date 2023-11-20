@@ -62,6 +62,7 @@ TEST_F(Chip8Test, TestSize) {
 }
 
 TEST_F(Chip8Test, TestCLS) {
+	// 00E0: clear screen
 	loadROM("games/clearscreen", rom_blankScreen);
 	ASSERT_EQ(chip8.romSize, rom_blankScreen_size);
 	ASSERT_TRUE(isScreenBlank());
@@ -72,6 +73,8 @@ TEST_F(Chip8Test, TestCLS) {
 }
 
 TEST_F(Chip8Test, TestRET) {
+	// 00EE: return
+	// 2nnn: call subroutine at nnn
 	loadROM("games/callreturn", rom_call_return);
 	ASSERT_EQ(chip8.romSize, rom_call_return_size);
 	ASSERT_EQ(chip8.PC, 0x200);
@@ -89,6 +92,49 @@ TEST_F(Chip8Test, TestRET) {
 	ASSERT_EQ(chip8.PC, 0x204);
 	ASSERT_EQ(chip8.stackPointer, 1);
 }
+
+TEST_F(Chip8Test, TestJP) {
+	// 1nnn: jump
+	loadROM("games/jumpreturn", rom_jump_return);
+	ASSERT_EQ(chip8.romSize, rom_jump_return_size);
+	ASSERT_EQ(chip8.PC, 0x200);
+	ASSERT_EQ(chip8.stackPointer, 0);
+	step();
+	ASSERT_EQ(chip8.stackPointer, 0);
+	ASSERT_EQ(chip8.PC, 0x204);
+}
+
+TEST_F(Chip8Test, TestLD_EQ_NE) {
+	// 6xkk: LD Vx kk
+	// 3xkk: SE Vx, kk
+	// 4xkk: SNE Vx kk
+	// 5xy0: SE Vx Vy
+	// 9xy0: SNE Vx Vy
+	loadROM("games/ldsesne", rom_ld_se_sne);
+	ASSERT_EQ(chip8.romSize, rom_ld_se_sne_size);
+	ASSERT_EQ(chip8.V[0x1], 0);
+	step();
+	ASSERT_EQ(chip8.V[0x1], 0xab);
+	ASSERT_EQ(chip8.PC, 0x202);
+	step();
+	ASSERT_EQ(chip8.PC, 0x206);
+	step();
+	ASSERT_EQ(chip8.V[0x1], 0xaa);
+	step();
+	ASSERT_EQ(chip8.PC, 0x20a);
+	step();
+	ASSERT_EQ(chip8.V[0x1], 0xab);
+	step();
+	ASSERT_EQ(chip8.PC, 0x20e);
+	step();
+	ASSERT_EQ(chip8.V[0x1], 0xaa);
+	step();
+	ASSERT_EQ(chip8.PC, 0x212);
+	step();
+	step();
+	ASSERT_EQ(chip8.PC, 0x218);
+}
+
 
 GTEST_API_ int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);

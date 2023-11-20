@@ -251,7 +251,7 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				/* Add V[x] and V[y] (lowest 8 bits)
 					* If sum > 255, VF = 1. V%X = sum & 0xF */
 				if(printOpcodes == 1) {
-					addrInfo(chip8, "ADD V%X, V%X", chip8->V[x], chip8->V[y]);
+					addrInfo(chip8, "ADD V%X, V%X", x, y);
 				}
 				sum = chip8->V[x] + chip8->V[y];
 				chip8->V[0xF] = sum > 255;

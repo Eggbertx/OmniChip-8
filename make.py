@@ -245,8 +245,9 @@ def run_tests(print_opcodes = False):
 	)
 	if run_cmd(build_test_cmd, True, True, True)[1] == 0:
 		test_status = run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
-		if test_status[1] != 0:
-			print("Test exited with error code {}".format(test_status[1]))
+		exit(test_status[1])
+	else:
+		exit(1)
 
 
 def clean():

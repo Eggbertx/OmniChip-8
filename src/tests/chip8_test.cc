@@ -135,6 +135,26 @@ TEST_F(Chip8Test, TestLD_EQ_NE) {
 	ASSERT_EQ(chip8.PC, 0x218);
 }
 
+TEST_F(Chip8Test, TestADD) {
+	// 7xkk: ADD Vx kk
+	// 8xy4: ADD Vx Vy
+	loadROM("games/add", rom_add);
+	ASSERT_EQ(chip8.romSize, rom_add_size);
+	ASSERT_EQ(chip8.V[0], 0);
+	step();
+	step();
+	ASSERT_EQ(chip8.V[0], 1);
+	ASSERT_EQ(chip8.V[1], 1);
+	step();
+	ASSERT_EQ(chip8.V[0], 2);
+	step();
+	ASSERT_EQ(chip8.V[0], 3);
+	step();
+	step();
+	ASSERT_EQ(chip8.V[1], 0xff);
+	ASSERT_EQ(chip8.V[0xf], 1);
+	ASSERT_EQ(chip8.V[0], 2);
+}
 
 GTEST_API_ int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);

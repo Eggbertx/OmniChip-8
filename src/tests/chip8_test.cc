@@ -1,6 +1,11 @@
 #include <gtest/gtest.h>
-
+#ifdef CMAKE_TEST
+extern "C" {
+#endif
 #include "../chip8.h"
+#ifdef CMAKE_TEST
+}
+#endif
 #include "testing_roms.h"
 
 #define __EMBED_ROM__ 1
@@ -105,10 +110,11 @@ TEST_F(Chip8Test, TestJP) {
 }
 
 TEST_F(Chip8Test, TestLD_EQ_NE) {
-	// 6xkk: LD Vx kk
 	// 3xkk: SE Vx, kk
 	// 4xkk: SNE Vx kk
 	// 5xy0: SE Vx Vy
+	// 6xkk: LD Vx kk
+	// 8xy0: LD Vx Vy
 	// 9xy0: SNE Vx Vy
 	loadROM("games/ldsesne", rom_ld_se_sne);
 	ASSERT_EQ(chip8.romSize, rom_ld_se_sne_size);
@@ -133,6 +139,9 @@ TEST_F(Chip8Test, TestLD_EQ_NE) {
 	step();
 	step();
 	ASSERT_EQ(chip8.PC, 0x218);
+	step();
+	step();
+	ASSERT_EQ(chip8.V[0], chip8.V[8]);
 }
 
 TEST_F(Chip8Test, TestADD) {
@@ -154,6 +163,30 @@ TEST_F(Chip8Test, TestADD) {
 	ASSERT_EQ(chip8.V[1], 0xff);
 	ASSERT_EQ(chip8.V[0xf], 1);
 	ASSERT_EQ(chip8.V[0], 2);
+}
+
+TEST_F(Chip8Test, TestAND_OR_XOR) {
+	// 8xy1: OR Vx Vy
+	// 8xy2: AND Vx Vy
+	// 8xy3: XOR Vx Vy
+	loadROM("games/andorxor", rom_and_or_xor);
+	ASSERT_EQ(chip8.romSize, rom_and_or_xor_size);
+	step();
+	ASSERT_EQ(chip8.V[0], 0x80);
+	step();
+	ASSERT_EQ(chip8.V[1], 0x1);
+	step();
+	ASSERT_EQ(chip8.V[0], 0x81);
+	step();
+	ASSERT_EQ(chip8.V[1], 0xf0);
+	step();
+	ASSERT_EQ(chip8.V[0], 0x80);
+	step();
+	ASSERT_EQ(chip8.V[1], 0x40);
+	step();
+	ASSERT_EQ(chip8.V[0], 0xc0);
+	step();
+	ASSERT_EQ(chip8.V[0], 0x80);
 }
 
 GTEST_API_ int main(int argc, char** argv) {

@@ -258,7 +258,7 @@ def clean():
 		fs_action("delete", del_file)
 
 if __name__ == "__main__":
-	actions = ("sdl", "curses", "gb", "c64", "test", "clean", "help")
+	actions = ("sdl", "curses", "gb", "c64", "test", "embed", "clean", "help")
 	action = "sdl" if len(sys.argv) == 1 else sys.argv.pop(1)
 	platform = "native"
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
@@ -278,10 +278,20 @@ if __name__ == "__main__":
 	elif action == "clean":
 		clean()
 		exit(0)
-	else:
+	elif action == "help":
+		print(f"usage: {sys.argv[0]} [action] [args]")
+		print(f"    valid actions: {actions}")
+		exit()
+	elif action in actions:
 		parser.add_argument("--embed",
 			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
 			default="games/omnichip8")
+		if action == "embed":
+			args = parser.parse_args()
+			create_embed(args.embed)
+			exit()
+	else:
+		fatal_print(f"Unrecognized action {action}, recognized actions: {actions}")
 
 	args = parser.parse_args()
 	build(platform,

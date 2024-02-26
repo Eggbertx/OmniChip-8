@@ -258,53 +258,33 @@ def clean():
 		fs_action("delete", del_file)
 
 if __name__ == "__main__":
-	action = "build"
-	try:
-		action = sys.argv.pop(1)
-	except Exception: # no argument was passed
-		pass
-	if(action.startswith("-") == False):
-		sys.argv.insert(1, action)
-
+	actions = ("sdl", "curses", "gb", "c64", "test", "clean", "help")
+	action = "sdl" if len(sys.argv) == 1 else sys.argv.pop(1)
+	platform = "native"
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
-	parser.add_argument("action",
-		nargs = 1,
-		default = "build",
-		choices = ("build", "clean", "test"))
-
-	if action == "--help" or action == "-h":
-		parser.print_help()
-		exit(2)
-	elif action == "build":
-		parser.add_argument("--platform",
-			help="the platform to build for",
-			choices=("c64", "gb", "native", "sim6502"),
-			default="native")
-		parser.add_argument("--library",
-			help="the library to use when platform = native.",
-			choices=("sdl", "curses"),
-			default="sdl")
+	if action == "sdl" or action == "curses":
 		parser.add_argument("--debug",
-			help="build OmniChip-8 with debugging symbols",
+			help="Build OmniChip-8 with debugging symbols",
 			default=False,
 			action="store_true")
-		parser.add_argument("--embed",
-			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
-			default="games/omnichip8")
-		args = parser.parse_args()
-		build(args.platform, args.library, args.debug, args.embed)
 	elif action == "test":
-		parser.add_argument("--print-opcodes",
-			help="print opcodes when testing the CHIP-8 ROM execution",
+		parser.add_argument("--quiet",
+			help="Don't print opcodes, just the test results",
 			default=False,
 			action="store_true")
 		args = parser.parse_args()
-		run_tests(args.print_opcodes)
+		run_tests(not args.quiet)
+		exit(0)
 	elif action == "clean":
 		clean()
 		exit(0)
 	else:
-		parser.print_help()
-		exit(0)
+		parser.add_argument("--embed",
+			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
+			default="games/omnichip8")
 
 	args = parser.parse_args()
+	build(platform,
+	   args.__dict__.get("library", "sdl"),
+	   args.__dict__.get("debug", False),
+	   args.__dict__.get("embed", "games/omnichip8"))

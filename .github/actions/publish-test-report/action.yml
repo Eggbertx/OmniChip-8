@@ -1,0 +1,19 @@
+name: publish-test-report
+description: "Publishes the OmniChip-8 test results"
+
+runs:
+  using: composite
+  steps:
+
+    - name: 'Fixing the dubious git 128 error'
+      shell: bash
+      run: |
+        git config --global --add safe.directory '*'
+
+    - name: 'Publish Test Results'
+      uses: dorny/test-reporter@v1.6.0
+      with:
+        name: test_report
+        path: '**/test-report.xml'
+        reporter: java-junit
+        fail-on-error: 'false'

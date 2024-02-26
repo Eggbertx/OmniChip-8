@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "chip8.h"
+#include "opcode_funcs.h"
 #include "io.h"
 #include "util.h"
 
@@ -48,11 +49,6 @@ void resetChip8(struct Chip8* chip8) {
 uchar initChip8(struct Chip8* chip8) {
 	resetChip8(chip8);
 	return loadROM(chip8, chip8->romPath);
-}
-
-void clearDisplay(struct Chip8* chip8) {
-	memset(chip8->screen, 0, 64*32);
-	clearScreen();
 }
 
 void drawScreen(struct Chip8* chip8) {
@@ -326,31 +322,9 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 			chip8->V[x] = rnd & nn;
 			break;
 		}
-		case 0xD000: {
-			ushort sx = 0;
-			ushort sy = 0;
-			uchar pixel;
-			ushort offset;
-			if(printOpcodes == 1) {
-				addrInfo(chip8, "DRW V%X, V%X, #%x", x, y, n);
-			}
-			chip8->V[0xF] = 0;
-
-			for(sy = 0; sy < n && (sy+y) < 32; sy++) {
-				pixel = chip8->memory[chip8->I+sy];
-				for(sx = 0; sx < 8; sx++) {
-					if((pixel & (0x80 >> sx)) != 0) {
-						offset = (chip8->V[x] + sx + ((chip8->V[y] + sy) * 64));
-						if(chip8->screen[offset] == 1) {
-							chip8->V[0xF] = 1;
-						}
-						chip8->screen[offset] ^= 1;
-					}
-				}
-			}
-			chip8->drawFlag = 1;
-		}
-		break;
+		case 0xD000:
+			drawSprite(chip8, x, y, n);
+			break;
 		case 0xE000:
 			if(nn == 0x009E) {
 				if(printOpcodes == 1) {
@@ -421,16 +395,4 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 		dumpBytes(chip8->memory, 4096, "dumps/memorybytes_unrecognized.txt");
 		printStatus(chip8);
 		chip8->status = STATUS_ERROR;
-}
-
-void error(struct Chip8* chip8, char* format, ...) {
-	va_list args;
-
-	va_start(args, format);
-	/* vprintf(format, args); */
-	va_end(args);
-
-	dumpBytes(chip8->memory, 4096, "dumps/memorybytes.txt");
-	printStatus(chip8);
-	chip8->status = STATUS_STOPPED;
 }

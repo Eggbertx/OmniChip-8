@@ -152,7 +152,7 @@ def build(platform = "native", library = "sdl", debugging = False, embed = ""):
 		debugging = False
 
 	cmd = ""
-	sources = ["src/util.c", "src/chip8.c", "src/main.c"]
+	sources = ["src/util.c", "src/opcode_funcs.c", "src/chip8.c", "src/main.c"]
 
 	if msbuild:
 		# Visual Studio development console is being used
@@ -239,10 +239,10 @@ def run_tests(print_opcodes = False):
 	gtest_libs_status = run_cmd("pkg-config --libs gtest_main", print_output=False)
 	if gtest_libs_status[1] != 0:
 		fatal_print("Unable to get gtest package info: " + gtest_libs_status[0])
-	build_test_cmd = "c++ -o oc8_test_chip8 -g {} {} -Wno-write-strings -fdiagnostics-color=always src/tests/chip8_test.cc src/chip8.c src/io_template.c src/util.c".format(
+
+	build_test_cmd = "c++ -o oc8_test_chip8 -g {} {} -Wno-write-strings -fdiagnostics-color=always src/tests/chip8_test.cc src/opcode_funcs.c src/chip8.c src/io_template.c src/util.c".format(
 		"-DPRINT_DEBUG" if print_opcodes else "",
-		gtest_libs_status[0]
-	)
+		gtest_libs_status[0])
 	if run_cmd(build_test_cmd, True, True, True)[1] == 0:
 		test_status = run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
 		exit(test_status[1])

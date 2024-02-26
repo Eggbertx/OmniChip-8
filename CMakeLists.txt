@@ -20,6 +20,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(oc8-test
+	src/opcode_funcs.c
 	src/chip8.c
 	src/util.c
 	src/io_template.c

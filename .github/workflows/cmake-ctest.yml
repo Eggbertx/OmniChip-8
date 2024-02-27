@@ -43,4 +43,6 @@ jobs:
     - name: Publish test report
       if: ${{ !cancelled() }}
       working-directory: ${{github.workspace}}/build
-      uses: dorny/test-reporter@v1.6.0
+      uses: ./.github/actions/publish-test-report
+      with:
+        report-name: oc8

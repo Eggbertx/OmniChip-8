@@ -20,7 +20,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Check out repo
+      uses: actions/checkout@v3
+      with:
+        lfs: true
+        submodules: 'recursive'
 
     - name: Create dummy embed rom
       working-directory: ${{github.workspace}}/

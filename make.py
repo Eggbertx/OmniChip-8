@@ -253,7 +253,7 @@ def run_tests(print_opcodes = False):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h", "x64", "packages"]
+	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h", "x64", "packages", "build"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 
@@ -287,17 +287,20 @@ if __name__ == "__main__":
 		exit()
 	elif action in actions:
 		if action == "embed":
-			args = parser.parse_args()
-			create_embed(args.embed)
+			if len(sys.argv) != 2:
+				fatal_print(f"usage: {sys.argv[0]} embed path/to/romfile")
+			create_embed(sys.argv[1])
 			exit()
-		parser.add_argument("--embed",
-			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
-			default="games/omnichip8")
 		platform = action
 	else:
 		fatal_print(f"Unrecognized action {action}, recognized actions: {actions}")
 
+	parser.add_argument("--embed",
+		help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
+		default="games/omnichip8")
 	args = parser.parse_args()
+
+	create_embed(args.embed)
 	build(platform, library,
 		args.__dict__.get("debug", False),
 		args.__dict__.get("embed", "games/omnichip8"))

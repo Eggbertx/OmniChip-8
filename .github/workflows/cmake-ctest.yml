@@ -46,14 +46,8 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}} --output-junit test-report.xml
 
     - name: Publish test report
-      if: ${{ !cancelled() }}
-      uses: ./.github/actions/publish-test-report
+      if: success() || failure()
       with:
-        report-name: oc8
-        report-path: build/test-report.xml
-
-    - name: "Upload Unit Test Reports"
-      if: ${{ !cancelled() }}
-      uses: ./.github/actions/upload-test-report
-      with:
-        report-name: ${{ env.REPORT_NAME }}
+        name: CTest Tests
+        path: ./build/test-report.xml
+        reporter: jest-junit

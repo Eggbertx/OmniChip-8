@@ -5,6 +5,9 @@ inputs:
   report-name:
     description: "Name of the check run which will be created."
     required: true
+  report-path:
+    description: "Path of the test results XML file to be used"
+    required: true
 
 runs:
   using: composite
@@ -19,6 +22,6 @@ runs:
       uses: dorny/test-reporter@v1.6.0
       with:
         name: test_report_${{ inputs.report-name }}
-        path: 'test-report.xml'
+        path: ${{ inputs.report-path }}
         reporter: java-junit
         fail-on-error: 'true'

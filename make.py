@@ -253,7 +253,7 @@ def run_tests(print_opcodes = False):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h"]
+	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h", "x64", "packages"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 
@@ -261,12 +261,14 @@ if __name__ == "__main__":
 	actions = ("sdl", "curses", "gb", "c64", "test", "embed", "clean", "help")
 	action = "sdl" if len(sys.argv) == 1 else sys.argv.pop(1)
 	platform = "native"
+	library = "sdl"
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
 	if action == "sdl" or action == "curses":
 		parser.add_argument("--debug",
 			help="Build OmniChip-8 with debugging symbols",
 			default=False,
 			action="store_true")
+		library = action
 	elif action == "test":
 		parser.add_argument("--quiet",
 			help="Don't print opcodes, just the test results",
@@ -278,23 +280,24 @@ if __name__ == "__main__":
 	elif action == "clean":
 		clean()
 		exit(0)
-	elif action == "help":
+	elif action == "help" or action == "--help" or action == "-h":
+		joined = ", ".join(actions)
 		print(f"usage: {sys.argv[0]} [action] [args]")
-		print(f"    valid actions: {actions}")
+		print(f"    valid actions (default is sdl): {joined}")
 		exit()
 	elif action in actions:
-		parser.add_argument("--embed",
-			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
-			default="games/omnichip8")
 		if action == "embed":
 			args = parser.parse_args()
 			create_embed(args.embed)
 			exit()
+		parser.add_argument("--embed",
+			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
+			default="games/omnichip8")
+		platform = action
 	else:
 		fatal_print(f"Unrecognized action {action}, recognized actions: {actions}")
 
 	args = parser.parse_args()
-	build(platform,
-	   args.__dict__.get("library", "sdl"),
-	   args.__dict__.get("debug", False),
-	   args.__dict__.get("embed", "games/omnichip8"))
+	build(platform, library,
+		args.__dict__.get("debug", False),
+		args.__dict__.get("embed", "games/omnichip8"))

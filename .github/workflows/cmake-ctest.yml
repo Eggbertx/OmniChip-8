@@ -51,4 +51,4 @@ jobs:
       with:
         name: CTest Tests
         path: ./build/test-report.xml
-        reporter: jest-junit
+        reporter: java-junit

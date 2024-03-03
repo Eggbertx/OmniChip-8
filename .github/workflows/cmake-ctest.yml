@@ -46,6 +46,7 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}} --output-junit test-report.xml
 
     - name: Publish test report
+      uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
         name: CTest Tests

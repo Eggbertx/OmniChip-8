@@ -258,7 +258,7 @@ def clean():
 		fs_action("delete", del_file)
 
 if __name__ == "__main__":
-	actions = ("sdl", "curses", "gb", "c64", "test", "embed", "clean", "help")
+	actions = ("sdl", "curses", "gb", "c64", "sim6502", "test", "embed", "clean", "help")
 	action = "sdl" if len(sys.argv) == 1 else sys.argv.pop(1)
 	platform = "native"
 	library = "sdl"

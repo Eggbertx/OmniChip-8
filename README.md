@@ -1,5 +1,7 @@
 OmniChip-8
 =======
+![test results](https://camo.githubusercontent.com/5638baa5674f7b1952dbeb1ab646b5e8ff97f799588c3c5c86742beb6451685e/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f74657374732d372532307061737365642d73756363657373)
+
 A Chip-8 emulator with heavy emphasis on being as cross-platform as humanly possible
 
 Building instructions
@@ -16,13 +18,13 @@ After you have them installed, you can run `python make.py build`
 If you are using mingw, you need to run `pacman -S base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` before using make.py.
 
 ## Desktop (curses, UNIX-like OSs)
-Run `python make.py build --library curses`
+Run `python make.py curses`
 ## Commodore 64
-Run `python make.py build --platform c64`
+Run `python make.py c64`
 ## sim65 (requires cc65)
-Run `python make.py build --platform sim6502`
+Run `python make.py sim6502`
 ## GameBoy
-Run `python make.py build --platform gb`
+Run `python make.py gb`
 
 
 Supported platforms

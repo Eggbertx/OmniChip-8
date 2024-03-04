@@ -15,16 +15,26 @@ If you have [NuGet](https://www.nuget.org/) installed, you can run `nuget restor
 
 After you have them installed, you can run `python make.py build`
 ### mingw
-If you are using mingw, you need to run `pacman -S base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` before using make.py.
+Run `pacman -S base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` before using make.py.
 
 ## Desktop (curses, UNIX-like OSs)
 Run `python make.py curses`
-## Commodore 64
+## Commodore 64 (requires cc65)
 Run `python make.py c64`
 ## sim65 (requires cc65)
 Run `python make.py sim6502`
-## GameBoy
+## GameBoy (requires z88dk)
 Run `python make.py gb`
+
+Testing
+------
+To test OmniChip-8, run the following commands
+```Shell
+cmake -B build
+cd build
+make && make test
+```
+To generate a coverage report, run `make lcov` from the build directory after you have run the above commands (including `make test`). This requires [lcov](https://github.com//linux-test-project/lcov) to be installed. If no errors are returned, the report will be generated in the build/lcov/ directory.
 
 
 Supported platforms

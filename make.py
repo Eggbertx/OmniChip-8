@@ -132,7 +132,7 @@ def term_type():
 		return "cmd"
 	return "other"
 
-def build(platform = "native", library = "sdl", debugging = False, embed = ""):
+def build(platform = "native", library = "sdl", debugging = False, embed = "", listing_file = ""):
 	if embed != "":
 		create_embed(embed)
 	term = term_type()
@@ -147,9 +147,6 @@ def build(platform = "native", library = "sdl", debugging = False, embed = ""):
 		)
 
 	oc8_out = out_file(platform, "OS" in os.environ and os.environ["OS"] == "Windows_NT")
-
-	if platform != "native":
-		debugging = False
 
 	cmd = ""
 	sources = ["src/util.c", "src/opcode_funcs.c", "src/chip8.c", "src/main.c"]
@@ -180,12 +177,11 @@ def build(platform = "native", library = "sdl", debugging = False, embed = ""):
 		sources.append("src/io_{}.c".format(library))
 
 		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE -fdiagnostics-color=always "
-		if debugging:
-			cflags = "-g " + cflags
-		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {cflags} {sources} {lib}".format(
+		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {debug_flag} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
 			includes_path = "-I" + includes_path,
+			debug_flag = "-g" if debugging else "",
 			cflags = cflags,
 			sources = " ".join(sources),
 			lib = lib
@@ -195,9 +191,11 @@ def build(platform = "native", library = "sdl", debugging = False, embed = ""):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
 		sources.append("src/io_{}.c".format(platform))
 
-		cmd = "cl65 -o {oc8_out} -t {platform} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
+		cmd = "cl65 -Oi -Or -Os {debug_flag} -o {oc8_out} -t {platform} {listing} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
+			debug_flag = "-g -Ln oc8.lbl" if debugging else "",
 			oc8_out = oc8_out,
 			platform = platform,
+			listing = ("-l " + listing_file) if listing_file != "" else "",
 			io_const = platform.upper(),
 			sources = " ".join(sources)
 		)
@@ -207,7 +205,7 @@ def build(platform = "native", library = "sdl", debugging = False, embed = ""):
 		io_const = platform.upper()
 
 		sources.append("src/io_{}.c".format(platform))
-		cmd = "zcc +{platform} -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
+		cmd = "zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
 			platform = platform,
 			oc8_out = oc8_out,
 			io_const = io_const,
@@ -263,44 +261,48 @@ if __name__ == "__main__":
 	platform = "native"
 	library = "sdl"
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
-	if action == "sdl" or action == "curses":
-		parser.add_argument("--debug",
-			help="Build OmniChip-8 with debugging symbols",
-			default=False,
-			action="store_true")
-		library = action
-	elif action == "test":
+	if action == "test":
 		parser.add_argument("--quiet",
 			help="Don't print opcodes, just the test results",
 			default=False,
 			action="store_true")
 		args = parser.parse_args()
 		run_tests(not args.quiet)
-		exit(0)
 	elif action == "clean":
 		clean()
-		exit(0)
 	elif action == "help" or action == "--help" or action == "-h":
 		joined = ", ".join(actions)
 		print(f"usage: {sys.argv[0]} [action] [args]")
 		print(f"    valid actions (default is sdl): {joined}")
-		exit()
 	elif action in actions:
 		if action == "embed":
 			if len(sys.argv) != 2:
 				fatal_print(f"usage: {sys.argv[0]} embed path/to/romfile")
 			create_embed(sys.argv[1])
 			exit()
-		platform = action
+		elif action in ("sdl","curses"):
+			library = action
+		else:
+			platform = action
+			library = ""
+		if action in ("c64", "gb"):
+			parser.add_argument("--listing-file",
+				help="Generate listing file",
+				default="",
+				metavar="PATH")
+		parser.add_argument("--debug",
+			help="Build OmniChip-8 with debugging symbols",
+			default=False,
+			action="store_true")
+		parser.add_argument("--embed",
+			help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
+			default="games/omnichip8")
+		args = parser.parse_args()
+
+		create_embed(args.embed)
+		build(platform, library,
+			args.__dict__.get("debug", False),
+			args.__dict__.get("embed", "games/omnichip8"),
+			args.__dict__.get("listing_file", ""))
 	else:
 		fatal_print(f"Unrecognized action {action}, recognized actions: {actions}")
-
-	parser.add_argument("--embed",
-		help="embed a ROM file in OmniChip-8 for platforms that don't have file access (GameBoy, Commodore 64, etc)",
-		default="games/omnichip8")
-	args = parser.parse_args()
-
-	create_embed(args.embed)
-	build(platform, library,
-		args.__dict__.get("debug", False),
-		args.__dict__.get("embed", "games/omnichip8"))

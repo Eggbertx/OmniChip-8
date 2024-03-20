@@ -244,8 +244,10 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				chip8->V[x] ^= chip8->V[y];
 			} else if(n == 0x0004) {
 				ushort sum = 0;
-				/* Add V[x] and V[y] (lowest 8 bits)
-					* If sum > 255, VF = 1. V%X = sum & 0xF */
+				/*
+				 * Add V[x] and V[y] (lowest 8 bits)
+				 * If sum > 255, VF = 1. V%X = sum & 0xF
+				 */
 				if(printOpcodes == 1) {
 					addrInfo(chip8, "ADD V%X, V%X", x, y);
 				}
@@ -253,17 +255,21 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				chip8->V[0xF] = sum > 255;
 				chip8->V[x] = sum & 0xFF;
 			} else if(n == 0x0005) {
-				/* Set Vx = Vx - Vy, set VF = NOT borrow.
-					* If Vx > Vy, then VF is set to 1, otherwise 0.
-					* Then Vy is subtracted from Vx, and the results stored in Vx. */
+				/*
+				 * Set Vx = Vx - Vy, set VF = NOT borrow.
+				 * If Vx > Vy, then VF is set to 1, otherwise 0.
+				 * Then Vy is subtracted from Vx, and the results stored in Vx.
+				 */
 				if(printOpcodes == 1) {
 					addrInfo(chip8, "SUB V%X, V%X", chip8->V[x], chip8->V[y]);
 				}
 				chip8->V[0xF] = chip8->V[x] > chip8->V[y];
 				chip8->V[x] -= chip8->V[y];
 			} else if(n == 0x0006) {
-				/* If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
-					* Then Vx is divided by 2. */
+				/*
+				 * If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
+				 * Then Vx is divided by 2.
+				 */
 				if(printOpcodes == 1) {
 					addrInfo(chip8, "SHR V%X {, V%X}", chip8->V[x], chip8->V[y]);
 				}
@@ -271,18 +277,22 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				chip8->V[x] /= 2;
 				/* chip8->V[x] = chip8->V[x] >> 1; */
 			} else if(n == 0x0007) {
-				/* If Vy > Vx, then VF is set to 1, otherwise 0.
-					* Then Vx is subtracted from Vy, and the results stored in Vx. */
-				/* Sets V%X to V%X minus V%X. VF is set to 0 when there's a borrow, and 1 when there isn't */
+				/*
+				 * If Vy > Vx, then VF is set to 1, otherwise 0.
+				 * Then Vx is subtracted from Vy, and the results stored in Vx.
+				 * Sets V%X to V%X minus V%X. VF is set to 0 when there's a borrow,
+				 * and 1 when there isn't
+				 */
 				if(printOpcodes == 1) {
 					addrInfo(chip8, "SUBN V%X, V%X", chip8->V[x], chip8->V[y]);
 				}
 				chip8->V[0xF] = chip8->V[y] > chip8->V[x];
 				chip8->V[x] = chip8->V[y] - chip8->V[x];
 			} else if(n == 0x000E) {
-				/* If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0.
-					* Then Vx is multiplied by 2.
-					*/
+				/*
+				 * If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0.
+				 * Then Vx is multiplied by 2.
+				 */
 				if(printOpcodes == 1) {
 					addrInfo(chip8, "SHL V%X {, V%X}", chip8->V[x], chip8->V[y]);
 					/* addrInfo(chip8, "Stores the most significant bit of V%X in VF and then shifts V%X to the left by 1", x, x); */
@@ -323,6 +333,9 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 			break;
 		}
 		case 0xD000:
+			if(printOpcodes == 1) {
+				addrInfo(chip8, "DRW %X, %X, %X", x, y, n);
+			}
 			drawSprite(chip8, x, y, n);
 			break;
 		case 0xE000:

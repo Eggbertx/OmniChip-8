@@ -81,7 +81,7 @@ void dumpBytes(uchar* bytes, short filesize, char* filename);
 
 void printStatus(struct Chip8* chip8);
 
-void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes);
+void _OC8_FASTCALL doCycle(struct Chip8* chip8);
 
 void _OC8_FASTCALL drawScreen(struct Chip8* chip8);
 

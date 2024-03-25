@@ -107,7 +107,7 @@ void printStatus(struct Chip8* chip8) {
 }
 
 
-void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
+void _OC8_FASTCALL doCycle(struct Chip8* chip8) {
 	uchar x = 0;	/* -X-- */
 	uchar y = 0;	/* --Y- */
 	ushort nnn = 0;	/* -nnn */
@@ -144,19 +144,19 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 	switch(chip8->opcode & 0xF000) {
 		case 0x0000:
 			if(chip8->opcode == 0x0000) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SYS %04x", nnn); /* not used for most "modern" ROMs */
-				}
+				#endif
 			} else if(chip8->opcode == 0x00E0) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "CLS");
-				}
+				#endif
 				clearDisplay(chip8);
 				chip8->drawFlag = 1;
 			} else if(chip8->opcode == 0x00EE) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "RET");
-				}
+				#endif
 				chip8->PC = chip8->stack[chip8->stackPointer] + ROM_START_ADDR + 2;
 				chip8->stackPointer--;
 			} else {
@@ -164,13 +164,13 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 			}
 			break;
 		case 0x1000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "JP %#04x", nnn);
-			}
+			#endif
 			if(nnn == chip8->PC - 2) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "Reached infinite loop in CHIP-8 ROM, pausing exeution.\n");
-				}
+				#endif
 				chip8->status = STATUS_PAUSED;
 				break;
 			}
@@ -178,69 +178,69 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 			break;
 		case 0x2000:
 			/* increment SP, put PC on top of stack, set to nnn */
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "CALL %#04x", nnn);
-			}
+			#endif
 			chip8->stack[chip8->stackPointer] = chip8->PC;
 			chip8->stackPointer++;
 			chip8->PC = nnn;
 			break;
 		case 0x3000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "SE V%X, #%x", x, nn);
-			}
+			#endif
 			if(chip8->V[x] == nn) {
 				chip8->PC += 2;
 			}
 			break;
 		case 0x4000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "SNE V%X, #%x", x, nn);
-			}
+			#endif
 			if(chip8->V[x] != nn) {
 				chip8->PC += 2;
 			}
 			break;
 		case 0x5000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "SE V%X, V%X", x, y);
-			}
+			#endif
 			if(chip8->V[x] == chip8->V[y]) {
 				chip8->PC += 2;
 			}
 			break;
 		case 0x6000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "LD V%X, #%x", x, nn);
-			}
+			#endif
 			chip8->V[x] = nn;
 			break;
 		case 0x7000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "ADD V%X, #%x", x, nn);
-			}
+			#endif
 			chip8->V[x] += nn;
 			break;
 		case 0x8000: {
 			if(n == 0x0000) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "LD V%X, V%X", x, y);
-				}
+				#endif
 				chip8->V[x] = chip8->V[y];
 			} else if(n == 0x0001) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "OR V%X, V%X", x, y);
-				}
+				#endif
 				chip8->V[x] = chip8->V[x] | chip8->V[y];
 			} else if(n == 0x0002) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "AND V%X, V%X", x, y);
-				}
+				#endif
 				chip8->V[x] = chip8->V[x] & chip8->V[y];
 			} else if(n == 0x0003) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "XOR V%X, V%X", x, y);
-				}
+				#endif
 				chip8->V[x] ^= chip8->V[y];
 			} else if(n == 0x0004) {
 				ushort sum = 0;
@@ -248,9 +248,9 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				 * Add V[x] and V[y] (lowest 8 bits)
 				 * If sum > 255, VF = 1. V%X = sum & 0xF
 				 */
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "ADD V%X, V%X", x, y);
-				}
+				#endif
 				sum = chip8->V[x] + chip8->V[y];
 				chip8->V[0xF] = sum > 255;
 				chip8->V[x] = sum & 0xFF;
@@ -260,9 +260,9 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				 * If Vx > Vy, then VF is set to 1, otherwise 0.
 				 * Then Vy is subtracted from Vx, and the results stored in Vx.
 				 */
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SUB V%X, V%X", chip8->V[x], chip8->V[y]);
-				}
+				#endif
 				chip8->V[0xF] = chip8->V[x] > chip8->V[y];
 				chip8->V[x] -= chip8->V[y];
 			} else if(n == 0x0006) {
@@ -270,9 +270,9 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				 * If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
 				 * Then Vx is divided by 2.
 				 */
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SHR V%X {, V%X}", chip8->V[x], chip8->V[y]);
-				}
+				#endif
 				chip8->V[0xF] = (chip8->V[x] & 1);
 				chip8->V[x] /= 2;
 				/* chip8->V[x] = chip8->V[x] >> 1; */
@@ -283,9 +283,9 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				 * Sets V%X to V%X minus V%X. VF is set to 0 when there's a borrow,
 				 * and 1 when there isn't
 				 */
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SUBN V%X, V%X", chip8->V[x], chip8->V[y]);
-				}
+				#endif
 				chip8->V[0xF] = chip8->V[y] > chip8->V[x];
 				chip8->V[x] = chip8->V[y] - chip8->V[x];
 			} else if(n == 0x000E) {
@@ -293,10 +293,10 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				 * If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0.
 				 * Then Vx is multiplied by 2.
 				 */
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SHL V%X {, V%X}", chip8->V[x], chip8->V[y]);
 					/* addrInfo(chip8, "Stores the most significant bit of V%X in VF and then shifts V%X to the left by 1", x, x); */
-				}
+				#endif
 				chip8->V[0xF] = (chip8->V[x] & 128);
 				chip8->V[x] = chip8->V[x] << 1;
 			} else {
@@ -305,63 +305,63 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 		}
 		break;
 		case 0x9000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "SNE V%X, V%X", x, y);
-			}
+			#endif
 			if(chip8->V[x] != chip8->V[y])
 				chip8->PC += 2;
 			break;
 		case 0xA000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "LD I, %#04x", nnn);
-			}
+			#endif
 			chip8->I = nnn;
 			break;
 		case 0xB000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "JP V0, %#04x", nnn);
-			}
+			#endif
 			chip8->PC = nnn + chip8->V[0];
 			break;
 		case 0xC000: {
 			uchar rnd;
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "RND V%X, #%x", x, nn);
-			}
+			#endif
 			rnd = (rand() % 255) + 1;
 			chip8->V[x] = rnd & nn;
 			break;
 		}
 		case 0xD000:
-			if(printOpcodes == 1) {
+			#ifdef PRINT_OPCODES
 				addrInfo(chip8, "DRW %X, %X, %X", x, y, n);
-			}
+			#endif
 			drawSprite(chip8, x, y, n);
 			break;
 		case 0xE000:
 			if(nn == 0x009E) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SKP V%X", x);
-				}
+				#endif
 				if(isPressed(chip8->V[x])) chip8->PC += 2;
 			} else if(nn == 0x00A1) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "SKNP V%X", x);
-				}
+				#endif
 				if(!isPressed(chip8->V[x])) chip8->PC += 2;
 			}
 			break;
 		case 0xF000: {
 			if(nn == 0x0007) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "LD V%X, DT", x);
-				}
+				#endif
 				chip8->V[x] = chip8->delayTimer;
 			} else if(nn == 0x000A) {
 				int key = 0xFF;
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "LD V%X, K", x);
-				}
+				#endif
 				do {
 					key = getKey();
 				} while(key == 0xFF);
@@ -373,9 +373,9 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 			} else if(nn == 0x001E) {
 				chip8->I += chip8->V[x];
 			} else if(nn == 0x0029) {
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "LD F, V%X", x);
-				}
+				#endif
 				chip8->I = chip8->V[x] * 5;
 			} else if(nn == 0x0033) {
 				chip8->memory[chip8->I+0] = (chip8->V[x]/10) % 10;
@@ -383,9 +383,9 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 				chip8->memory[chip8->I+2] = chip8->V[x] % 10;
 			} else if(nn == 0x0055) {
 				ushort i;
-				if(printOpcodes == 1) {
+				#ifdef PRINT_OPCODES
 					addrInfo(chip8, "LD [I], V%X", x);
-				}
+				#endif
 				for(i = 0; i <= x; i++) {
 					chip8->memory[chip8->I + i] = chip8->V[chip8->I + i];
 				}

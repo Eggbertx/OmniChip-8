@@ -10,9 +10,8 @@
 #include "util.h"
 
 struct Chip8 chip8;
-uchar printOpcodes;
 
-void runCycles(uchar printOpcodes) {
+static void runCycles() {
 	uchar event = EVENT_NULL;
 	while(chip8.status != STATUS_STOPPED) {
 		event = getEvent();
@@ -26,7 +25,7 @@ void runCycles(uchar printOpcodes) {
 			continue;
 		}
 
-		doCycle(&chip8, printOpcodes);
+		doCycle(&chip8);
 		if(chip8.drawFlag == 1) {
 			drawScreen(&chip8);
 		}
@@ -35,13 +34,7 @@ void runCycles(uchar printOpcodes) {
 
 int main(int argc, char *argv[]) {
 #ifndef __EMBED_ROM__
-	printOpcodes = 0;
-	if(argc == 3 && argv[1][0] == '-' && argv[1][1] == '-') {
-		chip8.romPath = argv[2];
-		if(strcmp(argv[1], "--print-opcodes") == 0) {
-			printOpcodes = 1;
-		}
-	} else if(argc == 2 && argv[1][0] != '-' && argv[1][0] != '-') {
+	if(argc == 2) {
 		chip8.romPath = argv[1];
 	} else {
 		oc8log("usage: %s [--print-opcodes] path/to/rom\n", argv[0]);
@@ -66,7 +59,7 @@ int main(int argc, char *argv[]) {
 #ifdef EMSCRIPTEN_IO
 	emscripten_set_main_loop_arg(runCycles, chip8, 60, 0);
 #else
-	runCycles(printOpcodes);
+	runCycles();
 #endif
 
 finish:

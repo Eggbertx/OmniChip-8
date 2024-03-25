@@ -132,7 +132,7 @@ def term_type():
 		return "cmd"
 	return "other"
 
-def build(platform = "native", library = "sdl", debugging = False, embed = "", listing_file = ""):
+def build(platform = "native", library = "sdl", debugging = False, print_opcodes=False, embed = "", listing_file = ""):
 	if embed != "":
 		create_embed(embed)
 	term = term_type()
@@ -149,7 +149,7 @@ def build(platform = "native", library = "sdl", debugging = False, embed = "", l
 	oc8_out = out_file(platform, "OS" in os.environ and os.environ["OS"] == "Windows_NT")
 
 	cmd = ""
-	sources = ["src/util.c", "src/opcode_funcs.c", "src/chip8.c", "src/main.c"]
+	sources = "src/util.c src/opcode_funcs.c src/chip8.c src/main.c"
 
 	if msbuild:
 		# Visual Studio development console is being used
@@ -174,22 +174,23 @@ def build(platform = "native", library = "sdl", debugging = False, embed = "", l
 		elif library == "sdl":
 			includes_path += "/SDL2"
 
-		sources.append("src/io_{}.c".format(library))
+		sources += " src/io_{}.c".format(library)
 
 		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE -fdiagnostics-color=always "
-		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {debug_flag} {cflags} {sources} {lib}".format(
+		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {debug_flag} {opcodes} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
 			includes_path = "-I" + includes_path,
 			debug_flag = "-g" if debugging else "",
+			opcodes = "-DPRINT_OPCODES" if print_opcodes else "",
 			cflags = cflags,
-			sources = " ".join(sources),
+			sources = sources,
 			lib = lib
 		)
 	elif platform in ("c64", "sim6502"):
 		if not in_pathenv("cl65"):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
-		sources.append("src/io_{}.c".format(platform))
+		sources += " src/io_{}.c".format(platform)
 
 		cmd = "cl65 -Oi -Or -Os {debug_flag} -o {oc8_out} -t {platform} {listing} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
 			debug_flag = "-g -Ln oc8.lbl" if debugging else "",
@@ -197,27 +198,27 @@ def build(platform = "native", library = "sdl", debugging = False, embed = "", l
 			platform = platform,
 			listing = ("-l " + listing_file) if listing_file != "" else "",
 			io_const = platform.upper(),
-			sources = " ".join(sources)
+			sources = sources
 		)
 	elif platform in ("gb", "ti83"):
 		if not in_pathenv("zcc"):
 			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
 		io_const = platform.upper()
 
-		sources.append("src/io_{}.c".format(platform))
+		sources += " src/io_{}.c".format(platform)
 		cmd = "zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
 			platform = platform,
 			oc8_out = oc8_out,
 			io_const = io_const,
-			sources = " ".join(sources)
+			sources = sources
 		)
 	elif platform == "emscripten":
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")
-		sources.append("src/io_{}.c".format("sdl"))
+		sources += " src/io_{}.c".format("sdl")
 		cmd = "emcc -o {oc8_out} -s --embed-file games USE_SDL=2 --shell-file shell.html -DSDL_IO -DEMSCRIPTEN_IO {sources}".format(
 			oc8_out = oc8_out,
-			sources = " ".join(sources)
+			sources = sources
 		)
 	else:
 		fatal_print("Unsupported platform " + platform)
@@ -274,7 +275,13 @@ if __name__ == "__main__":
 				fatal_print(f"usage: {sys.argv[0]} embed path/to/romfile")
 			create_embed(sys.argv[1])
 			exit()
-		elif action in ("sdl","curses"):
+		elif action == "sdl":
+			library = action
+			parser.add_argument( "-p", "--print-opcodes",
+				help="Print opcodes on the command line as they are executed",
+				default=False,
+				action="store_true")
+		elif action == "curses":
 			library = action
 		else:
 			platform = action
@@ -296,6 +303,7 @@ if __name__ == "__main__":
 		create_embed(args.embed)
 		build(platform, library,
 			args.__dict__.get("debug", False),
+			args.__dict__.get("print_opcodes", False),
 			args.__dict__.get("embed", "games/omnichip8"),
 			args.__dict__.get("listing_file", ""))
 	else:

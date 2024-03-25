@@ -51,7 +51,7 @@ uchar initChip8(struct Chip8* chip8) {
 	return loadROM(chip8, chip8->romPath);
 }
 
-void drawScreen(struct Chip8* chip8) {
+void _OC8_FASTCALL drawScreen(struct Chip8* chip8) {
 	int x = 0;
 	int y = 0;
 	for(y = 0; y < 32; y++) {
@@ -106,7 +106,8 @@ void printStatus(struct Chip8* chip8) {
 #endif
 }
 
-void doCycle(struct Chip8* chip8, uchar printOpcodes) {
+
+void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 	uchar x = 0;	/* -X-- */
 	uchar y = 0;	/* --Y- */
 	ushort nnn = 0;	/* -nnn */
@@ -129,15 +130,14 @@ void doCycle(struct Chip8* chip8, uchar printOpcodes) {
 		return;
 	}
 
-	chip8->opcode = (chip8->memory[chip8->PC] << 8) | (chip8->memory[chip8->PC + 1]);
+	chip8->opcode = POP_WORD(chip8);
 	chip8->PC += 2;
 
-	x = (chip8->opcode & 0x0F00) >> 8;
-	y = (chip8->opcode & 0x00F0) >> 4;
-
-	nnn = chip8->opcode & 0x0FFF;
-	nn = chip8->opcode & 0x00FF;
-	n = chip8->opcode & 0x000F;
+	x = OPCODE_X(chip8);
+	y = OPCODE_Y(chip8);
+	nnn = OPCODE_NNN(chip8);
+	nn = OPCODE_NN(chip8);
+	n = OPCODE_N(chip8);
 	chip8->drawFlag = 0;
 	chip8->currentKey = getKey();
 

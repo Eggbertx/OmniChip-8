@@ -56,7 +56,7 @@ class Chip8Test : public ::testing::Test {
 		}
 
 		void step() {
-			doCycle(&chip8, 1);
+			doCycle(&chip8);
 		}
 };
 }

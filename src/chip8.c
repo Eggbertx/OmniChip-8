@@ -130,7 +130,7 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8, uchar printOpcodes) {
 		return;
 	}
 
-	chip8->opcode = POP_WORD(chip8);
+	chip8->opcode = OPCODE(chip8);
 	chip8->PC += 2;
 
 	x = OPCODE_X(chip8);

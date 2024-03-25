@@ -61,6 +61,21 @@ class Chip8Test : public ::testing::Test {
 };
 }
 
+TEST_F(Chip8Test, TestMacros) {
+	loadROM("games/macros", rom_macros);
+	ASSERT_EQ(chip8.romSize, rom_macros_size);
+	ASSERT_EQ(chip8.PC, ROM_START_ADDR);
+	Chip8* c8 = &chip8;
+	ushort op = OPCODE(c8);
+	c8->opcode = op;
+	ASSERT_EQ(op, 0x0123);
+	ASSERT_EQ(OPCODE_N(c8), 3);
+	ASSERT_EQ(OPCODE_NN(c8), 0x23);
+	ASSERT_EQ(OPCODE_NNN(c8), 0x123);
+	ASSERT_EQ(OPCODE_X(c8), 1);
+	ASSERT_EQ(OPCODE_Y(c8), 2);
+}
+
 TEST_F(Chip8Test, TestSize) {
 	loadROM("games/omnichip8", rom_omnichip8);
 	ASSERT_EQ(chip8.romSize, rom_omnichip8_size);

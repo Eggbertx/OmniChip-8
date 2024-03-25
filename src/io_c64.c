@@ -40,16 +40,15 @@ uchar initAudio(void) {
 	return 0;
 }
 
-void drawPixel(uchar x, uchar y) {
+void _OC8_FASTCALL drawPixel(uchar x, uchar y) {
 	tgi_bar(x*PIXEL_SCALE, y*PIXEL_SCALE, x*PIXEL_SCALE+PIXEL_SCALE, y*PIXEL_SCALE+PIXEL_SCALE);
 }
 
-void clearScreen(void) {
+void _OC8_FASTCALL clearScreen(void) {
 	tgi_clear();
 }
 
-void flipScreen(void) {
-
+void _OC8_FASTCALL flipScreen(void) {
 }
 
 void cleanup(void) {

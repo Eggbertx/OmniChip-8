@@ -36,7 +36,7 @@
 #define STATUS_PAUSED 2
 #define STATUS_ERROR 4
 
-#define POP_WORD(chip8) (chip8->memory[chip8->PC] << 8) | (chip8->memory[chip8->PC + 1])
+#define OPCODE(chip8) (chip8->memory[chip8->PC] << 8) | (chip8->memory[chip8->PC + 1])
 #define OPCODE_INSTRUCTION(chip8) (chip8->opcode & 0xF000) >> 12
 #define OPCODE_X(chip8) (chip8->opcode & 0x0F00) >> 8
 #define OPCODE_Y(chip8) (chip8->opcode & 0x00F0) >> 4

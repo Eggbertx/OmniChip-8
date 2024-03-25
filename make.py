@@ -233,20 +233,19 @@ def build(platform = "native", library = "sdl", debugging = False, embed = "", l
 		
 	print("Built OmniChip-8 successfully")
 
-def run_tests(print_opcodes = False):
-	gtest_libs_status = run_cmd("pkg-config --libs gtest_main", print_output=False)
-	if gtest_libs_status[1] != 0:
-		fatal_print("Unable to get gtest package info: " + gtest_libs_status[0])
-
-	build_test_cmd = "c++ -o oc8_test_chip8 -g {} {} -Wno-write-strings -fdiagnostics-color=always src/tests/chip8_test.cc src/opcode_funcs.c src/chip8.c src/io_template.c src/util.c".format(
-		"-DPRINT_DEBUG" if print_opcodes else "",
-		gtest_libs_status[0])
-	if run_cmd(build_test_cmd, True, True, True)[1] == 0:
-		test_status = run_cmd("./oc8_test_chip8 --gtest_color=yes", True, True, True)
-		exit(test_status[1])
-	else:
-		exit(1)
-
+def run_tests():
+	test_commands = (
+		"cmake -B build",
+		"cmake --build build",
+		"ctest --test-dir build",
+		"cmake --build build -t lcov"
+	)
+	create_embed("games/omnichip8")
+	for cmd in test_commands:
+		status = run_cmd(cmd, realtime=True, print_command=True)
+		if status[1] != 0:
+			fatal_print("Failed running test command(s)")
+	print("Tests completed without errors, coverage reports should be in ./build/lcov/html/")
 
 def clean():
 	print("Cleaning up")
@@ -262,12 +261,7 @@ if __name__ == "__main__":
 	library = "sdl"
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
 	if action == "test":
-		parser.add_argument("--quiet",
-			help="Don't print opcodes, just the test results",
-			default=False,
-			action="store_true")
-		args = parser.parse_args()
-		run_tests(not args.quiet)
+		run_tests()
 	elif action == "clean":
 		clean()
 	elif action == "help" or action == "--help" or action == "-h":

@@ -37,22 +37,22 @@ int main(int argc, char *argv[]) {
 	if(argc == 2) {
 		chip8.romPath = argv[1];
 	} else {
-		oc8log("usage: %s [--print-opcodes] path/to/rom\n", argv[0]);
+		printf("usage: %s [--print-opcodes] path/to/rom\n", argv[0]);
 		return 1;
 	}
 #endif
 	if (initChip8(&chip8) > 0) {
-		oc8log("ERROR: Something went wrong while loading %s\n", chip8.romPath);
+		printf("ERROR: Something went wrong while loading %s\n", chip8.romPath);
 		goto finish;
 	}
 
 	if(initScreen() > 0) {
-		oc8log("ERROR: Unable to init screen.\n");
+		printf("ERROR: Unable to init screen.\n");
 		goto finish;
 	}
 	
 	if(initAudio() > 0) {
-		oc8log("ERROR: Unable to init audio.\n");
+		printf("ERROR: Unable to init audio.\n");
 		goto finish;
 	}
 

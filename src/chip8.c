@@ -67,43 +67,41 @@ void _OC8_FASTCALL drawScreen(struct Chip8* chip8) {
 
 void dumpBytes(uchar* bytes, short filesize, char* filename) {
 	int i;
-	#if !defined(__CC65__) && !defined(GB_IO)
-		FILE* dumpFile;
-		
-		oc8log("Dumping to %s\n", filename);
+#if defined(SDL_IO) || defined(CURSES_IO)
+	FILE* dumpFile;
+	
+	printf("Dumping to %s\n", filename);
 
-		dumpFile = fopen(filename, "w");
-		if(dumpFile == NULL) {
-			oc8log("Error opening %s\n", filename);
-			return;
-		}
+	dumpFile = fopen(filename, "w");
+	if(dumpFile == NULL) {
+		printf("Error opening %s\n", filename);
+		return;
+	}
 
-		for(i = 0; i < filesize; i++) {
-			fprintf(dumpFile, "%02X ", bytes[i]);
-			if((i + 1) % 0x10 == 0) fprintf(dumpFile, "\n");
-		}
-		fclose(dumpFile);
-	#endif
+	for(i = 0; i < filesize; i++) {
+		fprintf(dumpFile, "%02X ", bytes[i]);
+		if((i + 1) % 0x10 == 0) fprintf(dumpFile, "\n");
+	}
+	fclose(dumpFile);
+#endif
 }
 
 void printStatus(struct Chip8* chip8) {
-#ifdef PRINT_DEBUG
 	int r = 0;
 	int s = 0;
-	oc8log("V registers:\n");
+	printf("V registers:\n");
 	for(r = 0; r < 16; r++) {
-		oc8log("\tV%X: %x\n", r, chip8->V[r]);
+		printf("\tV%X: %x\n", r, chip8->V[r]);
 	}
-	oc8log("Program counter: %d\n", chip8->PC);
-	oc8log("Address register (I): %d\n", chip8->I);
-	oc8log("Delay timer: %d\nSound timer: %d\n", chip8->delayTimer, chip8->soundTimer);
-	oc8log("chip8->drawFlag: %d\n", chip8->drawFlag);
-	oc8log("Stack:\n");
+	printf("Program counter: %d\n", chip8->PC);
+	printf("Address register (I): %d\n", chip8->I);
+	printf("Delay timer: %d\nSound timer: %d\n", chip8->delayTimer, chip8->soundTimer);
+	printf("chip8->drawFlag: %d\n", chip8->drawFlag);
+	printf("Stack:\n");
 	for(s = 0; s < 16; s++) {
-		oc8log("\tstack[%d]: %x\n", s, chip8->stack[s]);
+		printf("\tstack[%d]: %x\n", s, chip8->stack[s]);
 	}
-	oc8log("Stack pointer: %d\n", chip8->stackPointer);
-#endif
+	printf("Stack pointer: %d\n", chip8->stackPointer);
 }
 
 
@@ -119,13 +117,17 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8) {
 	delay(1);
 	if(chip8->delayTimer > 0) chip8->delayTimer--;
 	if(chip8->soundTimer > 0) {
-		oc8log("beep");
+	#ifdef SDL_IO
+		printf("beep");
+	#endif
 		chip8->soundTimer--;
 	}
 
 
 	if(chip8->PC > ROM_END_ADDR) {
-		oc8log("Program counter (%04x) reached end of file\n", chip8->PC);
+	#ifdef SDL_IO
+		printf("Program counter (%04x) reached end of file\n", chip8->PC);
+	#endif
 		chip8->status = STATUS_PAUSED;
 		return;
 	}
@@ -404,8 +406,10 @@ void _OC8_FASTCALL doCycle(struct Chip8* chip8) {
 	return;
 
 	unrecognized_opcode:
-		oc8log("Unrecognized opcode: %04x at %04x\n", chip8->opcode, chip8->PC);
 		dumpBytes(chip8->memory, 4096, "dumps/memorybytes_unrecognized.txt");
+	#ifdef PRINT_DEBUG
+		printf("Unrecognized opcode: %04x at %04x\n", chip8->opcode, chip8->PC);
 		printStatus(chip8);
+	#endif
 		chip8->status = STATUS_ERROR;
 }

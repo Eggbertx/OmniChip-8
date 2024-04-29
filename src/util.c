@@ -43,14 +43,3 @@ uchar loadROM(struct Chip8* chip8, char* file) {
 	}
 	return 0;
 }
-
-int oc8log(const char* format, ...) {
-	int outSize = 0;
-	#if !defined(__CC65__)
-		va_list args;
-		va_start(args, format);
-		outSize = vprintf(format, args);
-		va_end(args);
-	#endif
-	return outSize;
-}

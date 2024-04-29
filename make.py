@@ -111,9 +111,8 @@ def out_file(platform, windows):
 	elif platform == "gb":
 		oc8_out += ".gb"
 	elif platform == "ti83":
-		# TODO: make this actually useful
+		print("WARNING: TI-8x support is still experimental")
 		oc8_out += ".83p"
-		fatal_print("TI-8x support hasn't been implemented yet")
 	elif platform == "emscripten":
 		oc8_out += ".html"
 	elif not "native":
@@ -200,7 +199,7 @@ def build(platform = "native", library = "sdl", debugging = False, print_opcodes
 			io_const = platform.upper(),
 			sources = sources
 		)
-	elif platform in ("gb", "ti83"):
+	elif platform in ("gb", "ti83", "ti83"):
 		if not in_pathenv("zcc"):
 			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
 		io_const = platform.upper()
@@ -256,7 +255,7 @@ def clean():
 		fs_action("delete", del_file)
 
 if __name__ == "__main__":
-	actions = ("sdl", "curses", "gb", "c64", "sim6502", "test", "embed", "clean", "help")
+	actions = ("sdl", "curses", "gb", "c64", "sim6502", "ti83", "test", "embed", "clean", "help")
 	action = "sdl" if len(sys.argv) == 1 else sys.argv.pop(1)
 	platform = "native"
 	library = "sdl"
@@ -307,4 +306,4 @@ if __name__ == "__main__":
 			args.__dict__.get("embed", "games/omnichip8"),
 			args.__dict__.get("listing_file", ""))
 	else:
-		fatal_print(f"Unrecognized action {action}, recognized actions: {actions}")
+		fatal_print(f"Unrecognized action {action}, recognized actions: {', '.join(actions)}")

@@ -54,8 +54,8 @@ uchar initChip8() {
 }
 
 void _OC8_FASTCALL drawScreen() {
-	int x = 0;
-	int y = 0;
+	register uchar x = 0;
+	register uchar y = 0;
 	for(y = 0; y < 32; y++) {
 		for(x = 0; x < 64; x++) {
 			if(chip8.screen[x+y*64] != 0) {
@@ -68,7 +68,7 @@ void _OC8_FASTCALL drawScreen() {
 }
 
 void dumpBytes(uchar* bytes, short filesize, char* filename) {
-	int i;
+	ushort i;
 #if defined(SDL_IO) || defined(CURSES_IO)
 	FILE* dumpFile;
 	
@@ -90,8 +90,8 @@ void dumpBytes(uchar* bytes, short filesize, char* filename) {
 
 void printStatus() {
 #ifdef PRINT_DEBUG
-	int r = 0;
-	int s = 0;
+	uchar r = 0;
+	uchar s = 0;
 	printf("V registers:\n");
 	for(r = 0; r < 16; r++) {
 		printf("\tV%X: %x\n", r, chip8.V[r]);

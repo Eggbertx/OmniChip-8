@@ -4,9 +4,9 @@
 #include "io.h"
 #include "opcode_funcs.h"
 
-void drawSprite(uchar x, uchar y, uchar height) {
-	ushort sx;
-	ushort sy;
+void _OC8_FASTCALL drawSprite(uchar x, uchar y, uchar height) {
+	uchar sx;
+	uchar sy;
 	uchar pixel;
 	ushort offset;
 	for(sy = 0; sy < height && (sy+y) < 32; sy++) {

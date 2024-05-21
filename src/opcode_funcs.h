@@ -3,8 +3,8 @@
 
 #include "chip8.h"
 
-void drawSprite(struct Chip8* chip8, uchar x, uchar y, uchar n);
+void drawSprite(uchar x, uchar y, uchar n);
 
-void clearDisplay(struct Chip8* chip8);
+void clearDisplay();
 
 #endif

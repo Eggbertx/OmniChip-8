@@ -59,6 +59,6 @@ void cleanup(void) {
 
 }
 
-void addrInfo(struct Chip8* chip8, char* format, ...) {
+void addrInfo(char* format, ...) {
 
 }

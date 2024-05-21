@@ -153,7 +153,7 @@ void drawPixel(uchar x, uchar y) {
 	mvprintw(y, x, PIXEL_CHAR);
 }
 
-void addrInfo(struct Chip8* chip8, char* format, ...) {
+void addrInfo(char* format, ...) {
 	va_list args;
 
 	va_start(args, format);

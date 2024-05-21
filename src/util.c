@@ -7,14 +7,13 @@
 #endif
 
 #include "util.h"
-#include "chip8.h"
 #include "rom_embed.h"
 
-uchar loadROM(struct Chip8* chip8, char* file) {
+uchar loadROM(char* file) {
 	ushort i = 0;
 #ifdef __EMBED_ROM__
-	chip8->romBytes = ROM;
-	chip8->romSize = ROM_len;
+	chip8.romBytes = ROM;
+	chip8.romSize = ROM_len;
 #else
 	FILE *rom_file;
 
@@ -24,22 +23,22 @@ uchar loadROM(struct Chip8* chip8, char* file) {
 		return 1;
 	}
 	fseek(rom_file, 0L, SEEK_END);
-	chip8->romSize = ftell(rom_file);
-	if(chip8->romSize == 0) {
+	chip8.romSize = ftell(rom_file);
+	if(chip8.romSize == 0) {
 		return 1;
 	}
-	printf("Loading %s (%d bytes)\n", file, chip8->romSize);
+	printf("Loading %s (%d bytes)\n", file, chip8.romSize);
 	rewind(rom_file);
 
-	chip8->romBytes = (uchar *)malloc(chip8->romSize+1);
-	fread(chip8->romBytes, 1, chip8->romSize,rom_file);
+	chip8.romBytes = (uchar *)malloc(chip8.romSize+1);
+	fread(chip8.romBytes, 1, chip8.romSize,rom_file);
 	fclose(rom_file);
 #endif
 	for(i = 0; i < 80; i++) {
-		chip8->memory[FONT_START_ADDR + i] = font[i];
+		chip8.memory[FONT_START_ADDR + i] = font[i];
 	}
-	for(i = 0; i < chip8->romSize; i++) {
-		chip8->memory[ROM_START_ADDR + i] = chip8->romBytes[i];
+	for(i = 0; i < chip8.romSize; i++) {
+		chip8.memory[ROM_START_ADDR + i] = chip8.romBytes[i];
 	}
 	return 0;
 }

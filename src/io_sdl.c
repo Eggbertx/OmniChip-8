@@ -2,8 +2,6 @@
 #include <SDL.h>
 
 #include "io.h"
-#include "chip8.h"
-
 
 uchar FULLSCREEN = 0;
 SDL_Renderer *renderer;
@@ -154,10 +152,10 @@ void cleanup(void) {
 	SDL_Quit();
 }
 
-void addrInfo(struct Chip8* chip8, char* format, ...) {
+void addrInfo(char* format, ...) {
 	va_list args;
 
-	printf("0x%04x: %04x, ", chip8->PC-2, chip8->opcode);
+	printf("0x%04x: %04x, ", chip8.PC-2, chip8.opcode);
 	va_start(args, format);
 	vprintf(format, args);
 	va_end(args);

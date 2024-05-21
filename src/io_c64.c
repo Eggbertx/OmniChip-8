@@ -57,6 +57,6 @@ void cleanup(void) {
 	kbrepeat(oldRepeat);
 }
 
-void addrInfo(struct Chip8* chip8, char* format, ...) {
+void addrInfo(char* format, ...) {
 
 }

@@ -191,7 +191,7 @@ def build(platform = "native", library = "sdl", debugging = False, print_opcodes
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
 		sources += " src/io_{}.c".format(platform)
 
-		cmd = "cl65 -Oi -Or -Os {debug_flag} -o {oc8_out} -t {platform} {listing} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
+		cmd = "cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} {listing} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
 			debug_flag = "-g -Ln oc8.lbl" if debugging else "",
 			oc8_out = oc8_out,
 			platform = platform,

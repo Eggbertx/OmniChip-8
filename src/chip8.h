@@ -36,13 +36,13 @@
 #define STATUS_PAUSED 2
 #define STATUS_ERROR 4
 
-#define OPCODE(chip8) (chip8->memory[chip8->PC] << 8) | (chip8->memory[chip8->PC + 1])
-#define OPCODE_INSTRUCTION(chip8) (chip8->opcode & 0xF000) >> 12
-#define OPCODE_X(chip8) (chip8->opcode & 0x0F00) >> 8
-#define OPCODE_Y(chip8) (chip8->opcode & 0x00F0) >> 4
-#define OPCODE_NNN(chip8) chip8->opcode & 0x0FFF
-#define OPCODE_NN(chip8) chip8->opcode & 0xFF
-#define OPCODE_N(chip8) chip8->opcode & 0xF
+#define OPCODE() (chip8.memory[chip8.PC] << 8) | (chip8.memory[chip8.PC + 1])
+#define OPCODE_INSTRUCTION() (chip8.opcode & 0xF000) >> 12
+#define OPCODE_X() (chip8.opcode & 0x0F00) >> 8
+#define OPCODE_Y() (chip8.opcode & 0x00F0) >> 4
+#define OPCODE_NNN() chip8.opcode & 0x0FFF
+#define OPCODE_NN() chip8.opcode & 0xFF
+#define OPCODE_N() chip8.opcode & 0xF
 
 #ifdef __CC65__
 #define _OC8_FASTCALL __fastcall__
@@ -72,19 +72,20 @@ struct Chip8 {
 	schar currentKey;
 	uchar screen[SCREEN_MEMORY]; /* All drawings are done in XOR mode. */
 };
+extern struct Chip8 chip8;
 
 extern uchar font[80];
 
-uchar initChip8(struct Chip8* chip8);
+uchar initChip8();
 
 void dumpBytes(uchar* bytes, short filesize, char* filename);
 
-void printStatus(struct Chip8* chip8);
+void printStatus();
 
-void _OC8_FASTCALL doCycle(struct Chip8* chip8);
+void _OC8_FASTCALL doCycle();
 
-void _OC8_FASTCALL drawScreen(struct Chip8* chip8);
+void _OC8_FASTCALL drawScreen();
 
-void resetChip8(struct Chip8* chip8);
+void resetChip8();
 
 #endif

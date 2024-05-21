@@ -9,8 +9,6 @@
 #include "io.h"
 #include "util.h"
 
-struct Chip8 chip8;
-
 static void runCycles() {
 	uchar event = EVENT_NULL;
 	while(chip8.status != STATUS_STOPPED) {
@@ -21,13 +19,13 @@ static void runCycles() {
 		}
 
 		if(chip8.status == STATUS_PAUSED) {
-			drawScreen(&chip8);
+			drawScreen();
 			continue;
 		}
 
-		doCycle(&chip8);
+		doCycle();
 		if(chip8.drawFlag == 1) {
-			drawScreen(&chip8);
+			drawScreen();
 		}
 	}
 }

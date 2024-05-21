@@ -13,10 +13,9 @@ extern "C" {
 namespace {
 class Chip8Test : public ::testing::Test {
 	protected:
-		struct Chip8 chip8;
-		uchar blankScreen[64 * 32];
+		uchar blankScreen[SCREEN_MEMORY];
 		void SetUp() override {
-			resetChip8(&chip8);
+			resetChip8();
 			for(int i = 0; i < 80; i++) {
 				chip8.memory[FONT_START_ADDR + i] = font[i];
 			}
@@ -56,7 +55,7 @@ class Chip8Test : public ::testing::Test {
 		}
 
 		void step() {
-			doCycle(&chip8);
+			doCycle();
 		}
 };
 }
@@ -65,15 +64,14 @@ TEST_F(Chip8Test, TestMacros) {
 	loadROM("games/macros", rom_macros);
 	ASSERT_EQ(chip8.romSize, rom_macros_size);
 	ASSERT_EQ(chip8.PC, ROM_START_ADDR);
-	Chip8* c8 = &chip8;
-	ushort op = OPCODE(c8);
-	c8->opcode = op;
+	ushort op = OPCODE();
+	chip8.opcode = op;
 	ASSERT_EQ(op, 0x0123);
-	ASSERT_EQ(OPCODE_N(c8), 3);
-	ASSERT_EQ(OPCODE_NN(c8), 0x23);
-	ASSERT_EQ(OPCODE_NNN(c8), 0x123);
-	ASSERT_EQ(OPCODE_X(c8), 1);
-	ASSERT_EQ(OPCODE_Y(c8), 2);
+	ASSERT_EQ(OPCODE_N(), 3);
+	ASSERT_EQ(OPCODE_NN(), 0x23);
+	ASSERT_EQ(OPCODE_NNN(), 0x123);
+	ASSERT_EQ(OPCODE_X(), 1);
+	ASSERT_EQ(OPCODE_Y(), 2);
 }
 
 TEST_F(Chip8Test, TestSize) {

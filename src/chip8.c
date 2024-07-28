@@ -384,21 +384,21 @@ void _OC8_FASTCALL doCycle() {
 				#endif
 				chip8.I = chip8.V[x] * 5;
 			} else if(nn == 0x0033) {
-				chip8.memory[chip8.I+0] = (chip8.V[x]/10) % 10;
-				chip8.memory[chip8.I+1] = (chip8.V[x]/100) % 10;
+				chip8.memory[chip8.I+0] = chip8.V[x] / 100;
+				chip8.memory[chip8.I+1] = (chip8.V[x] / 10) % 10;
 				chip8.memory[chip8.I+2] = chip8.V[x] % 10;
 			} else if(nn == 0x0055) {
 				ushort i;
 				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "LD [I], V%X", x);
+				addrInfo(chip8, "LD [I], V%X", x);
 				#endif
 				for(i = 0; i <= x; i++) {
-					chip8.memory[chip8.I + i] = chip8.V[chip8.I + i];
+					chip8.memory[chip8.I + i] = chip8.V[i];
 				}
 			} else if(nn == 0x0065) {
 				ushort i;
-				for(i = 0; i < x; i++) {
-					chip8.V[chip8.I + i] = chip8.memory[chip8.I + i];
+				for(i = 0; i <= x; i++) {
+					chip8.V[i] = chip8.memory[chip8.I + i];
 				}
 			}
 		}

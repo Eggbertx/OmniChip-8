@@ -31,6 +31,13 @@ uchar font[80] = {
 
 struct Chip8 chip8;
 
+#ifdef DEBUG_KEYS
+
+char currentOpcode[20];
+#define CLEAR_CURENT_OPCODE() memset(currentOpcode, '\0', sizeof(currentOpcode));
+
+#endif
+
 void resetChip8() {
 	chip8.status = STATUS_RUNNING;
 	chip8.PC = ROM_START_ADDR;
@@ -67,29 +74,8 @@ void _OC8_FASTCALL drawScreen() {
 	flipScreen();
 }
 
-void dumpBytes(uchar* bytes, short filesize, char* filename) {
-	ushort i;
-#if defined(SDL_IO) || defined(CURSES_IO)
-	FILE* dumpFile;
-	
-	printf("Dumping to %s\n", filename);
-
-	dumpFile = fopen(filename, "w");
-	if(dumpFile == NULL) {
-		printf("Error opening %s\n", filename);
-		return;
-	}
-
-	for(i = 0; i < filesize; i++) {
-		fprintf(dumpFile, "%02X ", bytes[i]);
-		if((i + 1) % 0x10 == 0) fprintf(dumpFile, "\n");
-	}
-	fclose(dumpFile);
-#endif
-}
 
 void printStatus() {
-#ifdef PRINT_DEBUG
 	uchar r = 0;
 	uchar s = 0;
 	printf("V registers:\n");
@@ -105,9 +91,8 @@ void printStatus() {
 		printf("\tstack[%d]: %x\n", s, chip8.stack[s]);
 	}
 	printf("Stack pointer: %d\n", chip8.stackPointer);
-#endif
+	printf("Current instruction");
 }
-
 
 void _OC8_FASTCALL doCycle() {
 	uchar x = 0;	/* -X-- */
@@ -147,21 +132,25 @@ void _OC8_FASTCALL doCycle() {
 	chip8.drawFlag = 0;
 	chip8.currentKey = getKey();
 
+
 	switch(chip8.opcode & 0xF000) {
 		case 0x0000:
 			if(chip8.opcode == 0x0000) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SYS %04x", nnn); /* not used for most "modern" ROMs */
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "SYS %04x", nnn); /* not used for most "modern" ROMs */
 				#endif
 			} else if(chip8.opcode == 0x00E0) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "CLS");
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					strcpy(currentOpcode, "CLS");
 				#endif
 				clearDisplay();
 				chip8.drawFlag = 1;
 			} else if(chip8.opcode == 0x00EE) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "RET");
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					strcpy(currentOpcode, "RET");
 				#endif
 				chip8.PC = chip8.stack[chip8.stackPointer] + ROM_START_ADDR + 2;
 				chip8.stackPointer--;
@@ -170,12 +159,13 @@ void _OC8_FASTCALL doCycle() {
 			}
 			break;
 		case 0x1000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "JP %#04x", nnn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "JP %#04x", nnn);
 			#endif
 			if(nnn == chip8.PC - 2) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "Reached infinite loop in CHIP-8 ROM, pausing exeution.\n");
+				#ifdef DEBUG_KEYS
+					printf("Reached infinite loop in CHIP-8 ROM, pausing exeution.\n");
 				#endif
 				chip8.status = STATUS_PAUSED;
 				break;
@@ -184,68 +174,78 @@ void _OC8_FASTCALL doCycle() {
 			break;
 		case 0x2000:
 			/* increment SP, put PC on top of stack, set to nnn */
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "CALL %#04x", nnn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "CALL %#04x", nnn);
 			#endif
 			chip8.stack[chip8.stackPointer] = chip8.PC;
 			chip8.stackPointer++;
 			chip8.PC = nnn;
 			break;
 		case 0x3000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "SE V%X, #%x", x, nn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "SE V%X, #%x", x, nn);
 			#endif
 			if(chip8.V[x] == nn) {
 				chip8.PC += 2;
 			}
 			break;
 		case 0x4000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "SNE V%X, #%x", x, nn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "SNE V%X, #%x", x, nn);
 			#endif
 			if(chip8.V[x] != nn) {
 				chip8.PC += 2;
 			}
 			break;
 		case 0x5000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "SE V%X, V%X", x, y);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "SE V%X, V%X", x, y);
 			#endif
 			if(chip8.V[x] == chip8.V[y]) {
 				chip8.PC += 2;
 			}
 			break;
 		case 0x6000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "LD V%X, #%x", x, nn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "LD V%X, #%x", x, nn);
 			#endif
 			chip8.V[x] = nn;
 			break;
 		case 0x7000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "ADD V%X, #%x", x, nn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "ADD V%X, #%x", x, nn);
 			#endif
 			chip8.V[x] += nn;
 			break;
 		case 0x8000: {
 			if(n == 0x0000) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "LD V%X, V%X", x, y);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "LD V%X, V%X", x, y);
 				#endif
 				chip8.V[x] = chip8.V[y];
 			} else if(n == 0x0001) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "OR V%X, V%X", x, y);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "OR V%X, V%X", x, y);
 				#endif
 				chip8.V[x] = chip8.V[x] | chip8.V[y];
 			} else if(n == 0x0002) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "AND V%X, V%X", x, y);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "AND V%X, V%X", x, y);
 				#endif
 				chip8.V[x] = chip8.V[x] & chip8.V[y];
 			} else if(n == 0x0003) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "XOR V%X, V%X", x, y);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "XOR V%X, V%X", x, y);
 				#endif
 				chip8.V[x] ^= chip8.V[y];
 			} else if(n == 0x0004) {
@@ -254,8 +254,9 @@ void _OC8_FASTCALL doCycle() {
 				 * Add V[x] and V[y] (lowest 8 bits)
 				 * If sum > 255, VF = 1. V%X = sum & 0xF
 				 */
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "ADD V%X, V%X", x, y);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "ADD V%X, V%X", x, y);
 				#endif
 				sum = chip8.V[x] + chip8.V[y];
 				chip8.V[0xF] = sum > 255;
@@ -266,8 +267,9 @@ void _OC8_FASTCALL doCycle() {
 				 * If Vx > Vy, then VF is set to 1, otherwise 0.
 				 * Then Vy is subtracted from Vx, and the results stored in Vx.
 				 */
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SUB V%X, V%X", chip8.V[x], chip8.V[y]);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "SUB V%X, V%X", chip8.V[x], chip8.V[y]);
 				#endif
 				chip8.V[0xF] = chip8.V[x] > chip8.V[y];
 				chip8.V[x] -= chip8.V[y];
@@ -276,8 +278,9 @@ void _OC8_FASTCALL doCycle() {
 				 * If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0.
 				 * Then Vx is divided by 2.
 				 */
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SHR V%X {, V%X}", chip8.V[x], chip8.V[y]);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "SHR V%X {, V%X}", chip8.V[x], chip8.V[y]);
 				#endif
 				chip8.V[0xF] = (chip8.V[x] & 1);
 				chip8.V[x] /= 2;
@@ -289,8 +292,8 @@ void _OC8_FASTCALL doCycle() {
 				 * Sets V%X to V%X minus V%X. VF is set to 0 when there's a borrow,
 				 * and 1 when there isn't
 				 */
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SUBN V%X, V%X", chip8.V[x], chip8.V[y]);
+				#ifdef DEBUG_KEYS
+					sprintf(currentOpcode, "SUBN V%X, V%X", chip8.V[x], chip8.V[y]);
 				#endif
 				chip8.V[0xF] = chip8.V[y] > chip8.V[x];
 				chip8.V[x] = chip8.V[y] - chip8.V[x];
@@ -299,9 +302,9 @@ void _OC8_FASTCALL doCycle() {
 				 * If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0.
 				 * Then Vx is multiplied by 2.
 				 */
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SHL V%X {, V%X}", chip8.V[x], chip8.V[y]);
-					/* addrInfo(chip8, "Stores the most significant bit of V%X in VF and then shifts V%X to the left by 1", x, x); */
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "SHL V%X {, V%X}", chip8.V[x], chip8.V[y]);
 				#endif
 				chip8.V[0xF] = (chip8.V[x] & 128);
 				chip8.V[x] = chip8.V[x] << 1;
@@ -311,62 +314,71 @@ void _OC8_FASTCALL doCycle() {
 		}
 		break;
 		case 0x9000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "SNE V%X, V%X", x, y);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "SNE V%X, V%X", x, y);
 			#endif
 			if(chip8.V[x] != chip8.V[y])
 				chip8.PC += 2;
 			break;
 		case 0xA000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "LD I, %#04x", nnn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "LD I, %#04x", nnn);
 			#endif
 			chip8.I = nnn;
 			break;
 		case 0xB000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "JP V0, %#04x", nnn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "JP V0, %#04x", nnn);
 			#endif
 			chip8.PC = nnn + chip8.V[0];
 			break;
 		case 0xC000: {
 			uchar rnd;
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "RND V%X, #%x", x, nn);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "RND V%X, #%x", x, nn);
 			#endif
 			rnd = (rand() % 255) + 1;
 			chip8.V[x] = rnd & nn;
 			break;
 		}
 		case 0xD000:
-			#ifdef PRINT_OPCODES
-				addrInfo(chip8, "DRW %X, %X, %X", x, y, n);
+			#ifdef DEBUG_KEYS
+				CLEAR_CURENT_OPCODE();
+				sprintf(currentOpcode, "DRW %X, %X, %X", x, y, n);
 			#endif
 			drawSprite(x, y, n);
 			break;
 		case 0xE000:
 			if(nn == 0x009E) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SKP V%X", x);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "SKP V%X", x);
 				#endif
 				if(isPressed(chip8.V[x])) chip8.PC += 2;
 			} else if(nn == 0x00A1) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "SKNP V%X", x);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "SKNP V%X", x);
 				#endif
 				if(!isPressed(chip8.V[x])) chip8.PC += 2;
 			}
 			break;
 		case 0xF000: {
 			if(nn == 0x0007) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "LD V%X, DT", x);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "LD V%X, DT", x);
 				#endif
 				chip8.V[x] = chip8.delayTimer;
 			} else if(nn == 0x000A) {
 				int key = 0xFF;
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "LD V%X, K", x);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "LD V%X, K", x);
 				#endif
 				do {
 					key = getKey();
@@ -379,8 +391,9 @@ void _OC8_FASTCALL doCycle() {
 			} else if(nn == 0x001E) {
 				chip8.I += chip8.V[x];
 			} else if(nn == 0x0029) {
-				#ifdef PRINT_OPCODES
-					addrInfo(chip8, "LD F, V%X", x);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "LD F, V%X", x);
 				#endif
 				chip8.I = chip8.V[x] * 5;
 			} else if(nn == 0x0033) {
@@ -389,8 +402,9 @@ void _OC8_FASTCALL doCycle() {
 				chip8.memory[chip8.I+2] = chip8.V[x] % 10;
 			} else if(nn == 0x0055) {
 				ushort i;
-				#ifdef PRINT_OPCODES
-				addrInfo(chip8, "LD [I], V%X", x);
+				#ifdef DEBUG_KEYS
+					CLEAR_CURENT_OPCODE();
+					sprintf(currentOpcode, "LD [I], V%X", x);
 				#endif
 				for(i = 0; i <= x; i++) {
 					chip8.memory[chip8.I + i] = chip8.V[i];
@@ -410,10 +424,8 @@ void _OC8_FASTCALL doCycle() {
 	return;
 
 	unrecognized_opcode:
-		dumpBytes(chip8.memory, 4096, "dumps/memorybytes_unrecognized.txt");
-	#ifdef PRINT_DEBUG
+		cleanup();
 		printf("Unrecognized opcode: %04x at %04x\n", chip8.opcode, chip8.PC);
-		printStatus(chip8);
-	#endif
+		printStatus();
 		chip8.status = STATUS_ERROR;
 }

@@ -152,13 +152,11 @@ void cleanup(void) {
 	SDL_Quit();
 }
 
-void addrInfo(char* format, ...) {
-	va_list args;
 
-	printf("0x%04x: %04x, ", chip8.PC-2, chip8.opcode);
-	va_start(args, format);
-	vprintf(format, args);
-	va_end(args);
+#ifdef DEBUG_KEYS
 
-	printf("\n");
+void handleDebugKeys() {
+
 }
+
+#endif

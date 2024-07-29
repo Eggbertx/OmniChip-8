@@ -58,7 +58,3 @@ void flipScreen(void) {
 void cleanup(void) {
 
 }
-
-void addrInfo(char* format, ...) {
-
-}

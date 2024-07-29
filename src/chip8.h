@@ -10,9 +10,6 @@
 #define CHIP8_MEMORY 4096
 #define SCREEN_MEMORY 64 * 32
 
-#ifdef SDL_IO
-	#define PRINT_DEBUG
-#endif
 
 #if defined(UINT8_MAX)
 	typedef uint8_t uchar;
@@ -77,8 +74,6 @@ extern struct Chip8 chip8;
 extern uchar font[80];
 
 uchar initChip8();
-
-void dumpBytes(uchar* bytes, short filesize, char* filename);
 
 void printStatus();
 

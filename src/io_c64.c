@@ -56,7 +56,3 @@ void cleanup(void) {
 	tgi_uninstall();
 	kbrepeat(oldRepeat);
 }
-
-void addrInfo(char* format, ...) {
-
-}

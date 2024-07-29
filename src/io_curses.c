@@ -153,17 +153,6 @@ void drawPixel(uchar x, uchar y) {
 	mvprintw(y, x, PIXEL_CHAR);
 }
 
-void addrInfo(char* format, ...) {
-	va_list args;
-
-	va_start(args, format);
-	mvwprintw(debugWindow, debug_line, 0, format);
-	debug_line++;
-
-	va_end(args);
-	wrefresh(debugWindow);
-}
-
 void cleanup(void) {
 	if(!valid_size)
 		/* the terminal width appears to be 0 columns, safe to assume no cleanup is needed */

@@ -46,7 +46,3 @@ void flipScreen(void) {
 void cleanup(void) {
 	
 }
-
-void addrInfo(struct Chip8* chip8, char* format, ...) {
-
-}

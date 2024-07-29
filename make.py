@@ -131,7 +131,7 @@ def term_type():
 		return "cmd"
 	return "other"
 
-def build(platform = "native", library = "sdl", debugging = False, print_opcodes=False, embed = "", listing_file = ""):
+def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = ""):
 	if embed != "":
 		create_embed(embed)
 	term = term_type()
@@ -176,12 +176,12 @@ def build(platform = "native", library = "sdl", debugging = False, print_opcodes
 		sources += " src/io_{}.c".format(library)
 
 		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE -fdiagnostics-color=always "
-		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {debug_flag} {opcodes} {cflags} {sources} {lib}".format(
+		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {debug_flag} {debug_keys} {cflags} {sources} {lib}".format(
 			oc8_out = oc8_out,
 			io_const = library.upper(),
 			includes_path = "-I" + includes_path,
 			debug_flag = "-g" if debugging else "",
-			opcodes = "-DPRINT_OPCODES" if print_opcodes else "",
+			debug_keys = "-DDEBUG_KEYS" if debug_keys else "",
 			cflags = cflags,
 			sources = sources,
 			lib = lib
@@ -274,14 +274,10 @@ if __name__ == "__main__":
 				fatal_print(f"usage: {sys.argv[0]} embed path/to/romfile")
 			create_embed(sys.argv[1])
 			exit()
-		elif action == "sdl":
+		elif action in ("sdl", "curses"):
 			library = action
-			parser.add_argument( "-p", "--print-opcodes",
-				help="Print opcodes on the command line as they are executed",
-				default=False,
-				action="store_true")
-		elif action == "curses":
-			library = action
+			parser.add_argument("-d", "--debug-keys",
+				help="Enable play/pause (F1), step in (F2), step out (F3), and print current opcode info (F4)")
 		else:
 			platform = action
 			library = ""
@@ -290,7 +286,7 @@ if __name__ == "__main__":
 				help="Generate listing file",
 				default="",
 				metavar="PATH")
-		parser.add_argument("--debug",
+		parser.add_argument("--debug-symbols",
 			help="Build OmniChip-8 with debugging symbols",
 			default=False,
 			action="store_true")
@@ -302,7 +298,7 @@ if __name__ == "__main__":
 		create_embed(args.embed)
 		build(platform, library,
 			args.__dict__.get("debug", False),
-			args.__dict__.get("print_opcodes", False),
+			args.__dict__.get("debug_keys", False),
 			args.__dict__.get("embed", "games/omnichip8"),
 			args.__dict__.get("listing_file", ""))
 	else:

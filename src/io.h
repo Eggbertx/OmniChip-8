@@ -55,6 +55,10 @@ void flipScreen(void);
 
 void cleanup(void);
 
-void addrInfo(char* format, ...);
+#ifdef DEBUG_KEYS 
+
+void handleDebugKeys();
+
+#endif
 
 #endif

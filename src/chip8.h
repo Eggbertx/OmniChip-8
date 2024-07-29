@@ -73,6 +73,8 @@ extern struct Chip8 chip8;
 
 extern uchar font[80];
 
+extern char currentOpcode[20];
+
 uchar initChip8();
 
 void printStatus();

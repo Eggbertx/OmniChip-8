@@ -1,5 +1,4 @@
 #include <stdio.h>
-/* TODO: replace printf/fprintf with conio.h functions for cc65 */
 #include <stdlib.h>
 #include <string.h>
 #ifdef EMSCRIPTEN_IO
@@ -11,7 +10,7 @@
 
 static void runCycles() {
 	uchar event = EVENT_NULL;
-	while(chip8.status != STATUS_STOPPED) {
+	while(chip8.status != STATUS_STOPPED && chip8.status != STATUS_ERROR) {
 		event = getEvent();
 		if(event == EVENT_ESCAPE || event == EVENT_WINDOWCLOSE) {
 			chip8.status = STATUS_STOPPED;

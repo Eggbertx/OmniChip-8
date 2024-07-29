@@ -29,11 +29,12 @@ uchar font[80] = {
 	0xF0, 0x80, 0xF0, 0x80, 0x80  /* F */
 };
 
+char currentOpcode[20];
+
 struct Chip8 chip8;
 
 #ifdef DEBUG_KEYS
 
-char currentOpcode[20];
 #define CLEAR_CURENT_OPCODE() memset(currentOpcode, '\0', sizeof(currentOpcode));
 
 #endif
@@ -78,20 +79,25 @@ void _OC8_FASTCALL drawScreen() {
 void printStatus() {
 	uchar r = 0;
 	uchar s = 0;
-	printf("V registers:\n");
+	printf("V registers: { ");
 	for(r = 0; r < 16; r++) {
-		printf("\tV%X: %x\n", r, chip8.V[r]);
+		printf("0x%02x", chip8.V[r]);
+		if(r < 15)
+			printf(", ");
 	}
-	printf("Program counter: %d\n", chip8.PC);
-	printf("Address register (I): %d\n", chip8.I);
+	printf(" }\n");
+	printf("Current instruction at %04x: %s\n", chip8.PC, currentOpcode);
+	printf("Address register (I): 0x%04x\n", chip8.I);
 	printf("Delay timer: %d\nSound timer: %d\n", chip8.delayTimer, chip8.soundTimer);
 	printf("chip8.drawFlag: %d\n", chip8.drawFlag);
-	printf("Stack:\n");
+	printf("Stack: { ");
 	for(s = 0; s < 16; s++) {
-		printf("\tstack[%d]: %x\n", s, chip8.stack[s]);
+		printf("0x%02x", chip8.stack[s]);
+		if(s < 15)
+			printf(", ");
 	}
+	printf(" }\n");
 	printf("Stack pointer: %d\n", chip8.stackPointer);
-	printf("Current instruction");
 }
 
 void _OC8_FASTCALL doCycle() {
@@ -152,7 +158,10 @@ void _OC8_FASTCALL doCycle() {
 					CLEAR_CURENT_OPCODE();
 					strcpy(currentOpcode, "RET");
 				#endif
+				if(chip8.stackPointer)
 				chip8.PC = chip8.stack[chip8.stackPointer] + ROM_START_ADDR + 2;
+				if(chip8.stackPointer == 0)
+					goto stack_underflow;
 				chip8.stackPointer--;
 			} else {
 				goto unrecognized_opcode;
@@ -179,6 +188,9 @@ void _OC8_FASTCALL doCycle() {
 				sprintf(currentOpcode, "CALL %#04x", nnn);
 			#endif
 			chip8.stack[chip8.stackPointer] = chip8.PC;
+			if(chip8.stackPointer >= 16)
+				goto stack_overflow;
+
 			chip8.stackPointer++;
 			chip8.PC = nnn;
 			break;
@@ -428,4 +440,19 @@ void _OC8_FASTCALL doCycle() {
 		printf("Unrecognized opcode: %04x at %04x\n", chip8.opcode, chip8.PC);
 		printStatus();
 		chip8.status = STATUS_ERROR;
+		return;
+
+	stack_overflow:
+		cleanup();
+		printf("Stack overflow\n");
+		printStatus();
+		chip8.status = STATUS_ERROR;
+		return;
+
+	stack_underflow:
+		cleanup();
+		printf("Stack underflow\n");
+		printStatus();
+		chip8.status = STATUS_ERROR;
+		return;
 }

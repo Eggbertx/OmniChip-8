@@ -277,7 +277,8 @@ if __name__ == "__main__":
 		elif action in ("sdl", "curses"):
 			library = action
 			parser.add_argument("-d", "--debug-keys",
-				help="Enable play/pause (F1), step in (F2), step out (F3), and print current opcode info (F4)")
+				help="Enable play/pause (F1), step in (F2), step out (F3), print current address, opcode, and instruction info (F4), and print current interpreter status (F5)",
+				action="store_true")
 		else:
 			platform = action
 			library = ""
@@ -297,7 +298,7 @@ if __name__ == "__main__":
 
 		create_embed(args.embed)
 		build(platform, library,
-			args.__dict__.get("debug", False),
+			args.__dict__.get("debug_symbols", False),
 			args.__dict__.get("debug_keys", False),
 			args.__dict__.get("embed", "games/omnichip8"),
 			args.__dict__.get("listing_file", ""))

@@ -8,7 +8,11 @@ SDL_Renderer *renderer;
 SDL_Window *screen;
 SDL_Texture *texture;
 SDL_Surface *surface;
-	
+
+#ifdef DEBUG_KEYS
+#include "chip8.h"
+#endif
+
 uchar initScreen(void) {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_EVENTS);
 	if(FULLSCREEN) {
@@ -35,20 +39,56 @@ uchar getEvent(void) {
 	SDL_PumpEvents();
 	SDL_PollEvent(&e);
 	switch(e.type) {
-		case SDL_KEYDOWN:
-			if(e.key.keysym.sym == SDLK_ESCAPE) {
-				return EVENT_ESCAPE;
+	case SDL_KEYDOWN:
+		if(e.key.keysym.sym == SDLK_ESCAPE) {
+			return EVENT_ESCAPE;
+		}
+	#ifdef DEBUG_KEYS
+		if(e.key.keysym.sym == SDLK_F1) {
+			if(chip8.status == STATUS_RUNNING) {
+				chip8.status = STATUS_PAUSED;
+			} else if(chip8.status == STATUS_PAUSED) {
+				chip8.status = STATUS_RUNNING;
 			}
+		} else if(e.key.keysym.sym == SDLK_F2) {
+			/* step in */
+			doCycle();
+			if(chip8.drawFlag == 1) {
+				drawScreen();
+			}
+			chip8.status = STATUS_PAUSED;
+		} else if(e.key.keysym.sym == SDLK_F3) {
+			/* step out */
+			uchar sp = chip8.stackPointer;
+			if(sp == 0) {
+				printf("Not in a subroutine\n");
+				break;
+			}
+
+			for(;sp > 0 && chip8.stackPointer >= sp;) {
+				doCycle();
+				if(chip8.drawFlag == 1) {
+					drawScreen();
+				}
+			}
+		}  else if(e.key.keysym.sym == SDLK_F4) {
+			/* print current address and instruction */
+			printf("0x%04X: 0x%04x - %s\n", chip8.PC, chip8.opcode, currentOpcode);
+		} else if(e.key.keysym.sym == SDLK_F5) {
+			/* print current status info */
+			printStatus();
+		}
+	#endif
 		break;
 
-		case SDL_WINDOWEVENT:
-			if(e.window.event == SDL_WINDOWEVENT_CLOSE) {
-				return EVENT_WINDOWCLOSE;
-			}
+	case SDL_WINDOWEVENT:
+		if(e.window.event == SDL_WINDOWEVENT_CLOSE) {
+			return EVENT_WINDOWCLOSE;
+		}
 		break;
 
-		default:
-			return 0;
+	default:
+		return 0;
 		break;
 	}
 	return 0;
@@ -151,12 +191,3 @@ void cleanup(void) {
 	SDL_FreeSurface(surface);
 	SDL_Quit();
 }
-
-
-#ifdef DEBUG_KEYS
-
-void handleDebugKeys() {
-
-}
-
-#endif

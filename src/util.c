@@ -7,7 +7,9 @@
 #endif
 
 #include "util.h"
+#ifdef __EMBED_ROM__
 #include "rom_embed.h"
+#endif
 
 uchar loadROM(char* file) {
 	ushort i = 0;

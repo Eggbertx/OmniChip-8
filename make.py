@@ -277,7 +277,7 @@ if __name__ == "__main__":
 		elif action in ("sdl", "curses"):
 			library = action
 			parser.add_argument("-d", "--debug-keys",
-				help="Enable play/pause (F1), step in (F2), step out (F3), print current address, opcode, and instruction info (F4), and print current interpreter status (F5)",
+				help="Enable play/pause (F1), reset (F2), step in (F3), step out (F4), print current address, opcode, and instruction info (F5), and print current interpreter status (F6)",
 				action="store_true")
 		else:
 			platform = action

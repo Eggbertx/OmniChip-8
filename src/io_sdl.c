@@ -45,37 +45,21 @@ uchar getEvent(void) {
 		}
 	#ifdef DEBUG_KEYS
 		if(e.key.keysym.sym == SDLK_F1) {
-			if(chip8.status == STATUS_RUNNING) {
-				chip8.status = STATUS_PAUSED;
-			} else if(chip8.status == STATUS_PAUSED) {
-				chip8.status = STATUS_RUNNING;
-			}
+			togglePause();
 		} else if(e.key.keysym.sym == SDLK_F2) {
-			/* step in */
-			doCycle();
-			if(chip8.drawFlag == 1) {
-				drawScreen();
-			}
-			chip8.status = STATUS_PAUSED;
+			printf("Resetting\n");
+			uchar preResetStatus = chip8.status;
+			initChip8();
+			initScreen();
+			chip8.status = preResetStatus;
 		} else if(e.key.keysym.sym == SDLK_F3) {
-			/* step out */
-			uchar sp = chip8.stackPointer;
-			if(sp == 0) {
-				printf("Not in a subroutine\n");
-				break;
-			}
-
-			for(;sp > 0 && chip8.stackPointer >= sp;) {
-				doCycle();
-				if(chip8.drawFlag == 1) {
-					drawScreen();
-				}
-			}
-		}  else if(e.key.keysym.sym == SDLK_F4) {
+			stepIn();
+		} else if(e.key.keysym.sym == SDLK_F4) {
+			stepOut();
+		}  else if(e.key.keysym.sym == SDLK_F5) {
 			/* print current address and instruction */
 			printf("0x%04X: 0x%04x - %s\n", chip8.PC, chip8.opcode, currentOpcode);
-		} else if(e.key.keysym.sym == SDLK_F5) {
-			/* print current status info */
+		} else if(e.key.keysym.sym == SDLK_F6) {
 			printStatus();
 		}
 	#endif
@@ -188,6 +172,7 @@ void clearScreen(void) {
 }
 
 void cleanup(void) {
-	SDL_FreeSurface(surface);
+	if(surface->refcount > 0)
+		SDL_FreeSurface(surface);
 	SDL_Quit();
 }

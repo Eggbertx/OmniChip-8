@@ -49,6 +49,7 @@ void resetChip8() {
 	memset(chip8.stack, 0, sizeof(chip8.stack));
 	memset(chip8.V, 0, sizeof(chip8.V));
 	memset(chip8.key, 0, sizeof(chip8.key));
+	memset(chip8.screen, 0, sizeof(chip8.screen));
 	chip8.stackPointer = 0;
 	chip8.I = 0;
 	chip8.delayTimer = 0;
@@ -99,6 +100,41 @@ void printStatus() {
 	printf(" }\n");
 	printf("Stack pointer: %d\n", chip8.stackPointer);
 }
+
+#ifdef DEBUG_KEYS
+
+void togglePause() {
+	if(chip8.status == STATUS_RUNNING) {
+		chip8.status = STATUS_PAUSED;
+	} else if(chip8.status == STATUS_PAUSED) {
+		chip8.status = STATUS_RUNNING;
+	}
+}
+
+void stepIn() {
+	doCycle();
+	if(chip8.drawFlag == 1) {
+		drawScreen();
+	}
+	chip8.status = STATUS_PAUSED;
+}
+
+void stepOut() {
+	uchar sp = chip8.stackPointer;
+	if(sp == 0) {
+		printf("Not in a subroutine\n");
+		return;
+	}
+
+	for(;sp > 0 && chip8.stackPointer >= sp;) {
+		doCycle();
+		if(chip8.drawFlag == 1) {
+			drawScreen();
+		}
+	}
+}
+
+#endif
 
 void _OC8_FASTCALL doCycle() {
 	uchar x = 0;	/* -X-- */
@@ -173,7 +209,7 @@ void _OC8_FASTCALL doCycle() {
 				sprintf(currentOpcode, "JP %#04x", nnn);
 			#endif
 			if(nnn == chip8.PC - 2) {
-				#ifdef DEBUG_KEYS
+				#ifdef SDL_IO
 					printf("Reached infinite loop in CHIP-8 ROM, pausing exeution.\n");
 				#endif
 				chip8.status = STATUS_PAUSED;
@@ -437,21 +473,21 @@ void _OC8_FASTCALL doCycle() {
 
 	unrecognized_opcode:
 		cleanup();
-		printf("Unrecognized opcode: %04x at %04x\n", chip8.opcode, chip8.PC);
+		printf("Error: Unrecognized opcode: %04x at %04x\n", chip8.opcode, chip8.PC);
 		printStatus();
 		chip8.status = STATUS_ERROR;
 		return;
 
 	stack_overflow:
 		cleanup();
-		printf("Stack overflow\n");
+		printf("Error: Stack overflow\n");
 		printStatus();
 		chip8.status = STATUS_ERROR;
 		return;
 
 	stack_underflow:
 		cleanup();
-		printf("Stack underflow\n");
+		printf("Error: Stack underflow\n");
 		printStatus();
 		chip8.status = STATUS_ERROR;
 		return;

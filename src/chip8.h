@@ -85,4 +85,14 @@ void _OC8_FASTCALL drawScreen();
 
 void resetChip8();
 
+#ifdef DEBUG_KEYS
+
+void togglePause();
+
+void stepIn();
+
+void stepOut();
+
+#endif
+
 #endif

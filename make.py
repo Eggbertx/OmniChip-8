@@ -215,7 +215,7 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")
 		sources += " src/io_{}.c".format("sdl")
-		cmd = "emcc -o {oc8_out} -s --embed-file games USE_SDL=2 --shell-file shell.html -DSDL_IO -DEMSCRIPTEN_IO {sources}".format(
+		cmd = "emcc -o {oc8_out} -s USE_SDL=2 --shell-file shell.html -DSDL_IO -D__EMBED_ROM__ -DEMSCRIPTEN_IO {sources}".format(
 			oc8_out = oc8_out,
 			sources = sources
 		)
@@ -255,7 +255,7 @@ def clean():
 		fs_action("delete", del_file)
 
 if __name__ == "__main__":
-	actions = ("sdl", "curses", "gb", "c64", "sim6502", "ti83", "test", "embed", "clean", "help")
+	actions = ("sdl", "curses", "emscripten", "gb", "c64", "sim6502", "ti83", "test", "embed", "clean", "help")
 	action = "sdl" if len(sys.argv) == 1 else sys.argv.pop(1)
 	platform = "native"
 	library = "sdl"
@@ -279,6 +279,9 @@ if __name__ == "__main__":
 			parser.add_argument("-d", "--debug-keys",
 				help="Enable play/pause (F1), reset (F2), step in (F3), step out (F4), print current address, opcode, and instruction info (F5), and print current interpreter status (F6)",
 				action="store_true")
+		elif action == "emscripten":
+			platform = "emscripten"
+			library = "sdl"
 		else:
 			platform = action
 			library = ""

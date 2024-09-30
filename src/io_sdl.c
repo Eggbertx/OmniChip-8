@@ -2,16 +2,15 @@
 #include <SDL.h>
 
 #include "io.h"
+#ifdef DEBUG_KEYS
+#include "chip8.h"
+#endif
 
 uchar FULLSCREEN = 0;
 SDL_Renderer *renderer;
 SDL_Window *screen;
 SDL_Texture *texture;
 SDL_Surface *surface;
-
-#ifdef DEBUG_KEYS
-#include "chip8.h"
-#endif
 
 uchar initScreen(void) {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_EVENTS);
@@ -20,7 +19,7 @@ uchar initScreen(void) {
 	} else {
 		screen = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	}
-	renderer = SDL_CreateRenderer(screen, -1, 0);
+	renderer = SDL_CreateRenderer(screen, -1, SDL_RENDERER_SOFTWARE);
 	SDL_SetRenderDrawColor(renderer, 255,255,255,255);
 	SDL_RenderSetScale(renderer, PIXEL_SCALE, PIXEL_SCALE);
 	surface = SDL_GetWindowSurface(screen);
@@ -174,5 +173,8 @@ void clearScreen(void) {
 void cleanup(void) {
 	if(surface->refcount > 0)
 		SDL_FreeSurface(surface);
+	SDL_DestroyTexture(texture);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(screen);
 	SDL_Quit();
 }

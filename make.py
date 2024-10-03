@@ -233,19 +233,20 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		
 	print("Built OmniChip-8 successfully")
 
-def run_tests():
-	test_commands = (
+def run_tests(coverage = True):
+	test_commands = [
 		"cmake -B build",
 		"cmake --build build",
-		"ctest --test-dir build",
-		"cmake --build build -t lcov"
-	)
+		"ctest --test-dir build"
+	]
+	if coverage:
+		test_commands.append("cmake --build build -t lcov")
 	create_embed("games/omnichip8")
 	for cmd in test_commands:
 		status = run_cmd(cmd, realtime=True, print_command=True)
 		if status[1] != 0:
 			fatal_print("Failed running test command(s)")
-	print("Tests completed without errors, coverage reports should be in ./build/lcov/html/")
+	print("Tests completed without errors" + (", coverage reports should be in ./build/lcov/html/" if coverage else ""))
 
 def clean():
 	print("Cleaning up")
@@ -261,7 +262,11 @@ if __name__ == "__main__":
 	library = "sdl"
 	parser = argparse.ArgumentParser(description = "OmniChip-8 build script")
 	if action == "test":
-		run_tests()
+		parser.add_argument("--no-coverage",
+			action="store_true",
+			help="Run tests without generating a coverage report")
+		args = parser.parse_args()
+		run_tests(not args.no_coverage)
 	elif action == "clean":
 		clean()
 	elif action == "help" or action == "--help" or action == "-h":

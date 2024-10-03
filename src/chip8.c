@@ -210,7 +210,7 @@ void _OC8_FASTCALL doCycle() {
 			#endif
 			if(nnn == chip8.PC - 2) {
 				#ifdef SDL_IO
-					printf("Reached infinite loop in CHIP-8 ROM, pausing exeution.\n");
+					printf("Reached infinite loop in CHIP-8 ROM, pausing execution.\n");
 				#endif
 				chip8.status = STATUS_PAUSED;
 				break;
@@ -337,8 +337,6 @@ void _OC8_FASTCALL doCycle() {
 				/*
 				 * If Vy > Vx, then VF is set to 1, otherwise 0.
 				 * Then Vx is subtracted from Vy, and the results stored in Vx.
-				 * Sets V%X to V%X minus V%X. VF is set to 0 when there's a borrow,
-				 * and 1 when there isn't
 				 */
 				#ifdef DEBUG_KEYS
 					sprintf(currentOpcode, "SUBN V%X, V%X", chip8.V[x], chip8.V[y]);
@@ -354,7 +352,7 @@ void _OC8_FASTCALL doCycle() {
 					CLEAR_CURENT_OPCODE();
 					sprintf(currentOpcode, "SHL V%X {, V%X}", chip8.V[x], chip8.V[y]);
 				#endif
-				chip8.V[0xF] = (chip8.V[x] & 128);
+				chip8.V[0xF] = (chip8.V[x] & 128) >> 7;
 				chip8.V[x] = chip8.V[x] << 1;
 			} else {
 				goto unrecognized_opcode;

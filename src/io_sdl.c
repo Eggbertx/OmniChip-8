@@ -171,7 +171,7 @@ void clearScreen(void) {
 }
 
 void cleanup(void) {
-	if(surface->refcount > 0)
+	if(surface != NULL && surface->refcount > 0)
 		SDL_FreeSurface(surface);
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);

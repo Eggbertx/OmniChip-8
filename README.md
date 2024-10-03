@@ -1,10 +1,9 @@
 # OmniChip-8
 ![9 tests passed](https://camo.githubusercontent.com/0d2dde873dda4d7bad1ee1f669b215cb425fb15baf6c21e13bf0180709edbd77/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f74657374732d392532307061737365642d73756363657373)
 
-OmniChip-8 A Chip-8 emulator with heavy emphasis on being as cross-platform as humanly possible
+OmniChip-8 is a Chip-8 emulator with the goal of making it as cross-platform as possible, with as little platform-specific assembly code as possible.
 
 # Building instructions
-
 ## Desktop (SDL)
 Run `python make.py`. In Windows, it is able to use Visual Studio (via the msbuild command) or mingw.
 
@@ -22,11 +21,13 @@ After you have them installed, you can run `python make.py build`
 ### Using mingw
 Run `pacman -S base-devel mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` before using make.py.
 
+
 ## Desktop (curses, UNIX-like OSs)
 Run `python make.py curses`
 
 ### Screenshot
 ![ncurses screenshot](./screenshots/curses.png)
+
 
 ## Commodore 64 (requires cc65)
 Run `python make.py c64`
@@ -73,5 +74,5 @@ If you want to just run the tests without generating a coverage report (removing
  * Bare metal x86
 
 
-# Games
-All of the games in `games/` are public domain, and came from [here](https://www.zophar.net/pdroms/chip8/chip-8-games-pack.html) except for omnichip8, oc8, and their respective .c8 sources.
+# Credit
+All of the games in `games/` are public domain, and came from [here](https://www.zophar.net/pdroms/chip8/chip-8-games-pack.html) except for omnichip8, oc8, and their respective .c8 sources. Some of the opcode comments in src/chip8.c come from [Cowgod's Chip-8 Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#font)

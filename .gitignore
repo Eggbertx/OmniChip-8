@@ -6,7 +6,7 @@ build/
 packages/
 *.user*
 src/*.s
-src/*.o
+*.o
 src/rom_embed.h
 zcc*
 /SDL*

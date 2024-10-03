@@ -190,6 +190,8 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		if not in_pathenv("cl65"):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
 		sources += " src/io_{}.c".format(platform)
+		if platform == "sim6502":
+			sources += " asm/sim6502_time.s"
 
 		cmd = "cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} -Cl {listing} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
 			debug_flag = "-g -Ln oc8.lbl" if debugging else "",
@@ -251,7 +253,7 @@ def run_tests(coverage = True):
 def clean():
 	print("Cleaning up")
 	fs_action("delete", "build/")
-	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h", "x64", "packages", "build"]
+	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h", "x64", "packages", "build", "Testing"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
 

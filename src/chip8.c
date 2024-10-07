@@ -142,7 +142,7 @@ void _OC8_FASTCALL doCycle() {
 	ushort nnn = 0;	/* -nnn */
 	uchar nn = 0;	/* --nn */
 	uchar n = 0;	/* ---n */
-	uchar event;
+
 	chip8.currentKey = -1; /* -1 if no keys are pressed, otherwise */
 
 	delay(1);
@@ -194,10 +194,9 @@ void _OC8_FASTCALL doCycle() {
 					CLEAR_CURENT_OPCODE();
 					strcpy(currentOpcode, "RET");
 				#endif
-				if(chip8.stackPointer)
-				chip8.PC = chip8.stack[chip8.stackPointer] + ROM_START_ADDR + 2;
 				if(chip8.stackPointer == 0)
 					goto stack_underflow;
+				chip8.PC = chip8.stack[chip8.stackPointer];
 				chip8.stackPointer--;
 			} else {
 				goto unrecognized_opcode;
@@ -223,11 +222,10 @@ void _OC8_FASTCALL doCycle() {
 				CLEAR_CURENT_OPCODE();
 				sprintf(currentOpcode, "CALL %#04x", nnn);
 			#endif
-			chip8.stack[chip8.stackPointer] = chip8.PC;
 			if(chip8.stackPointer >= 16)
 				goto stack_overflow;
-
 			chip8.stackPointer++;
+			chip8.stack[chip8.stackPointer] = chip8.PC;
 			chip8.PC = nnn;
 			break;
 		case 0x3000:

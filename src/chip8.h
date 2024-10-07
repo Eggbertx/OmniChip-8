@@ -60,7 +60,7 @@ struct Chip8 {
 						/* both timers down-count about 60 times per second when non-zero. */
 	uchar drawFlag;		/* if true, run draw function, this will likely be replaced later */
 
-	uchar stack[16];
+	ushort stack[16];
 	uchar stackPointer;
 	uchar memory[4096];	/* 4 KB, font located at 0x8110 */
 	

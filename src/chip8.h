@@ -6,10 +6,10 @@
 #define FONT_START_ADDR 0x050
 #define FONT_END_ADDR 0X0A0
 #define ROM_START_ADDR 0x200
-#define ROM_END_ADDR 0xFFF /* 4096 */
+#define ROM_END_ADDR 0xFFF
 #define CHIP8_MEMORY 4096
 #define SCREEN_MEMORY 64 * 32
-
+#define CLOCK_DELAY 2
 
 #if defined(UINT8_MAX)
 	typedef uint8_t uchar;
@@ -62,7 +62,7 @@ struct Chip8 {
 
 	ushort stack[16];
 	uchar stackPointer;
-	uchar memory[4096];	/* 4 KB, font located at 0x8110 */
+	uchar memory[CHIP8_MEMORY];	/* 4 KB, font located at 0x8110 */
 	
 	ushort opcode;
 	uchar key[16];

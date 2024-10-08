@@ -143,9 +143,9 @@ void _OC8_FASTCALL doCycle() {
 	uchar nn = 0;	/* --nn */
 	uchar n = 0;	/* ---n */
 
-	chip8.currentKey = -1; /* -1 if no keys are pressed, otherwise */
+	chip8.currentKey = -1; /* -1 if no keys are pressed, otherwise the CHIP-8 key value is stored here */
 
-	delay(1);
+
 	if(chip8.delayTimer > 0) chip8.delayTimer--;
 	if(chip8.soundTimer > 0) {
 	#ifdef PRINT_DEBUG
@@ -162,6 +162,10 @@ void _OC8_FASTCALL doCycle() {
 		chip8.status = STATUS_PAUSED;
 		return;
 	}
+	chip8.currentKey = getKey();
+	if(clockCheck() == 0) {
+		return;
+	}
 
 	chip8.opcode = OPCODE();
 	chip8.PC += 2;
@@ -172,7 +176,6 @@ void _OC8_FASTCALL doCycle() {
 	nn = OPCODE_NN();
 	n = OPCODE_N();
 	chip8.drawFlag = 0;
-	chip8.currentKey = getKey();
 
 
 	switch(chip8.opcode & 0xF000) {

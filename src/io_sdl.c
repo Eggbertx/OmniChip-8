@@ -11,6 +11,9 @@ SDL_Renderer *renderer;
 SDL_Window *screen;
 SDL_Texture *texture;
 SDL_Surface *surface;
+uchar clockReady = 0;
+
+long clockCallback(long interval, void* param);
 
 uchar initScreen(void) {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_EVENTS);
@@ -25,6 +28,7 @@ uchar initScreen(void) {
 	surface = SDL_GetWindowSurface(screen);
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+	SDL_AddTimer(2, clockCallback, NULL);
 	flipScreen();
 	return 0;
 }
@@ -181,3 +185,16 @@ void cleanup(void) {
 	SDL_DestroyWindow(screen);
 	SDL_Quit();
 }
+
+long clockCallback(long interval, void* param) {
+	clockReady = 1;
+	return interval;
+}
+
+uchar clockCheck() {
+	if(clockReady) {
+		clockReady = 0;
+		return 1;
+	}
+	return 0;
+}	

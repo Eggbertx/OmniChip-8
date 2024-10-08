@@ -46,3 +46,7 @@ void flipScreen(void) {
 void cleanup(void) {
 
 }
+
+uchar clockCheck() {
+	return 1;
+}

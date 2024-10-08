@@ -56,3 +56,7 @@ void cleanup(void) {
 	tgi_uninstall();
 	kbrepeat(oldRepeat);
 }
+
+uchar clockCheck() {
+	return 1;
+}

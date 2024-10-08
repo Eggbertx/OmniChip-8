@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <curses.h>
 #include <termios.h>
 #include <unistd.h>
@@ -16,6 +17,7 @@ struct termios old_tio;
 struct termios new_tio;
 int debug_line = 0;
 int valid_size = 0;
+int nextTick = 0;
 
 uchar initScreen(void) {
 	ioctl(0, TIOCGWINSZ, &max); /* get console size to make sure the console is big enough */
@@ -159,4 +161,17 @@ void cleanup(void) {
 		return; 
 	tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
 	endwin();
+}
+
+uchar clockCheck() {
+	int now;
+	struct timeval time;
+	gettimeofday(&time, NULL);
+	now = time.tv_usec / 1000;
+	printf("%d\n", time.tv_usec);
+	if(now >= nextTick) {
+		nextTick = now + CLOCK_DELAY;
+		return 1;
+	}
+	return 0;
 }

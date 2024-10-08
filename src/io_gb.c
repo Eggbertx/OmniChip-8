@@ -52,9 +52,13 @@ void clearScreen(void) {
 }
 
 void flipScreen(void) {
-	wait_vbl_done();
+	/* wait_vbl_done(); */
 }
 
 void cleanup(void) {
 
+}
+
+uchar clockCheck() {
+	return 1;
 }

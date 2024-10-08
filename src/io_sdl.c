@@ -35,6 +35,7 @@ void delay(ushort milliseconds) {
 
 uchar getEvent(void) {
 	SDL_Event e;
+	uchar preResetStatus;
 	SDL_PumpEvents();
 	SDL_PollEvent(&e);
 	switch(e.type) {
@@ -47,7 +48,7 @@ uchar getEvent(void) {
 			togglePause();
 		} else if(e.key.keysym.sym == SDLK_F2) {
 			printf("Resetting\n");
-			uchar preResetStatus = chip8.status;
+			preResetStatus = chip8.status;
 			initChip8();
 			initScreen();
 			chip8.status = preResetStatus;
@@ -100,7 +101,6 @@ uchar getKey(void) {
 
 schar isPressed(uchar key) {
 	const uchar* state = SDL_GetKeyboardState(NULL);
-	/* printf("Key : %d\n", key); */
 	switch(key) {
 		case 0x1:
 			return state[SDL_SCANCODE_1];
@@ -154,20 +154,23 @@ void playSound(void) {
 }
 
 void playAudio(void* data, void* stream, int length) {
-	
+
 }
 
 void drawPixel(uchar x, uchar y) {
-	/* printf("Drawing pixel at %d,%d\n", x, y); */
 	SDL_RenderDrawPoint(renderer, x, y);
 }
 
 void flipScreen(void) {
 	SDL_RenderPresent(renderer);
+	clearScreen();
 }
 
 void clearScreen(void) {
-	SDL_FillRect(surface, NULL, 0x000000);
+	SDL_SetRenderDrawColor(renderer, 0,0,0,0);
+	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 255,255,255,255);
+	/* SDL_FillRect(surface, NULL, 0x000000); */
 }
 
 void cleanup(void) {

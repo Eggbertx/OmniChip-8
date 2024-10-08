@@ -297,7 +297,7 @@ if __name__ == "__main__":
 				help="Generate listing file",
 				default="",
 				metavar="PATH")
-		parser.add_argument("--debug-symbols",
+		parser.add_argument("-g", "--debug-symbols",
 			help="Build OmniChip-8 with debugging symbols",
 			default=False,
 			action="store_true")

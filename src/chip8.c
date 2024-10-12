@@ -136,6 +136,7 @@ void stepOut() {
 
 #endif
 
+int iii;
 void _OC8_FASTCALL doCycle() {
 	uchar x = 0;	/* -X-- */
 	uchar y = 0;	/* --Y- */
@@ -143,10 +144,16 @@ void _OC8_FASTCALL doCycle() {
 	uchar nn = 0;	/* --nn */
 	uchar n = 0;	/* ---n */
 
-	chip8.currentKey = -1; /* -1 if no keys are pressed, otherwise the CHIP-8 key value is stored here */
+	chip8.currentKey = getKey(); /* -1 if no keys are pressed, otherwise the CHIP-8 key value is stored here */
 
+	if(clockCheck() == 0) {
+		return;
+	}
+	if(chip8.delayTimer > 0) {
+		chip8.delayTimer--;
+		return;
+	}
 
-	if(chip8.delayTimer > 0) chip8.delayTimer--;
 	if(chip8.soundTimer > 0) {
 	#ifdef PRINT_DEBUG
 		printf("beep");
@@ -160,10 +167,6 @@ void _OC8_FASTCALL doCycle() {
 		printf("Program counter (%04x) reached end of file\n", chip8.PC);
 	#endif
 		chip8.status = STATUS_PAUSED;
-		return;
-	}
-	chip8.currentKey = getKey();
-	if(clockCheck() == 0) {
 		return;
 	}
 

@@ -11,7 +11,7 @@
 #include "io.h"
 #include "chip8.h"
 
-struct winsize max;
+struct winsize terminalSize;
 WINDOW* debugWindow;
 struct termios old_tio;
 struct termios new_tio;
@@ -20,11 +20,11 @@ int valid_size = 0;
 int nextTick = 0;
 
 uchar initScreen(void) {
-	ioctl(0, TIOCGWINSZ, &max); /* get console size to make sure the console is big enough */
-	valid_size = (max.ws_col >= SCREEN_WIDTH && max.ws_row >= SCREEN_HEIGHT);
+	ioctl(0, TIOCGWINSZ, &terminalSize); /* get console size to make sure the console is big enough */
+	valid_size = (terminalSize.ws_col >= SCREEN_WIDTH && terminalSize.ws_row >= SCREEN_HEIGHT);
 	if(!valid_size) {
 		printf("Error: console too small. Must be at least %d rows and %d columns.\n", SCREEN_HEIGHT, SCREEN_WIDTH);
-		printf("Currently: %d rows and %d columns.\n", max.ws_row, max.ws_col);
+		printf("Currently: %d rows and %d columns.\n", terminalSize.ws_row, terminalSize.ws_col);
 		return 1;
 	}
 
@@ -43,10 +43,10 @@ uchar initScreen(void) {
 	/* setvbuf(stdin, NULL, _IONBF, 0);  */
 	curs_set(0); /* hide cursor */
 
-	if(max.ws_col > SCREEN_WIDTH+30) {
+	if(terminalSize.ws_row > SCREEN_HEIGHT+10) {
 		/* area for drawing debug info if the screen is large enough
 		debugWindow = newwin(SCREEN_HEIGHT-2, 28, 1, SCREEN_WIDTH+1); */
-		debugWindow = newwin(64, 64, 0, 65);
+		debugWindow = newwin(10, SCREEN_WIDTH, 33, 0);
 	}
 
 	return 0;
@@ -54,6 +54,7 @@ uchar initScreen(void) {
 
 void flipScreen(void) {
 	refresh();
+	wrefresh(debugWindow);
 }
 
 void clearScreen(void) {
@@ -168,9 +169,15 @@ uchar clockCheck() {
 	struct timeval time;
 	gettimeofday(&time, NULL);
 	now = time.tv_usec / 1000;
-	printf("%d\n", time.tv_usec);
+	if(now >= 1000) {
+		now -= 1000;
+	}
+
 	if(now >= nextTick) {
 		nextTick = now + CLOCK_DELAY;
+		if(nextTick >= 1000) {
+			nextTick -= 1000;
+		}
 		return 1;
 	}
 	return 0;

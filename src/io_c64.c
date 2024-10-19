@@ -6,6 +6,8 @@
 #include "chip8.h"
 
 unsigned char oldRepeat;
+uchar offsetX = 0;
+uchar offsetY = 0;
 
 uchar getEvent(void) {
 	return 0;
@@ -16,11 +18,14 @@ uchar getKey(void) {
 }
 
 uchar initScreen(void) {
+	uchar maxY;
 	tgi_install(tgi_static_stddrv);
 	tgi_init();
 	tgi_clear();
 
 	oldRepeat = kbrepeat(KBREPEAT_ALL);
+	maxY = tgi_getmaxy();
+	offsetY = maxY/2 - SCREEN_HEIGHT/2 - 1;
 	return 0;
 }
 
@@ -41,7 +46,10 @@ uchar initAudio(void) {
 }
 
 void _OC8_FASTCALL drawPixel(uchar x, uchar y) {
-	tgi_bar(x*PIXEL_SCALE, y*PIXEL_SCALE, x*PIXEL_SCALE+PIXEL_SCALE, y*PIXEL_SCALE+PIXEL_SCALE);
+	tgi_bar(
+		x*PIXEL_SCALE + offsetX, y*PIXEL_SCALE + offsetY,
+		x*PIXEL_SCALE+PIXEL_SCALE + offsetX,
+		y*PIXEL_SCALE+PIXEL_SCALE + offsetY);
 }
 
 void _OC8_FASTCALL clearScreen(void) {

@@ -136,7 +136,6 @@ void stepOut() {
 
 #endif
 
-int iii;
 void _OC8_FASTCALL doCycle() {
 	uchar x = 0;	/* -X-- */
 	uchar y = 0;	/* --Y- */

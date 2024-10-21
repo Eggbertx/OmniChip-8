@@ -13,7 +13,7 @@ SDL_Texture *texture;
 SDL_Surface *surface;
 uchar clockReady = 0;
 
-long clockCallback(long interval, void* param);
+unsigned int clockCallback(unsigned int interval, void* param);
 
 uchar initScreen(void) {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_AUDIO|SDL_INIT_VIDEO|SDL_INIT_EVENTS);
@@ -186,7 +186,7 @@ void cleanup(void) {
 	SDL_Quit();
 }
 
-long clockCallback(long interval, void* param) {
+unsigned int clockCallback(unsigned int interval, void* param) {
 	clockReady = 1;
 	return interval;
 }

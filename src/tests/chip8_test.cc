@@ -64,14 +64,13 @@ TEST_F(Chip8Test, TestMacros) {
 	loadROM("games/macros", rom_macros);
 	ASSERT_EQ(chip8.romSize, rom_macros_size);
 	ASSERT_EQ(chip8.PC, ROM_START_ADDR);
-	ushort op = OPCODE();
-	chip8.opcode = op;
-	ASSERT_EQ(op, 0x0123);
-	ASSERT_EQ(OPCODE_N(), 3);
-	ASSERT_EQ(OPCODE_NN(), 0x23);
-	ASSERT_EQ(OPCODE_NNN(), 0x123);
-	ASSERT_EQ(OPCODE_X(), 1);
-	ASSERT_EQ(OPCODE_Y(), 2);
+	ushort romWord = GET_WORD();;
+	ASSERT_EQ(romWord, 0x0123);
+	ASSERT_EQ(OPCODE_N(romWord), 3);
+	ASSERT_EQ(OPCODE_NN(romWord), 0x23);
+	ASSERT_EQ(OPCODE_NNN(romWord), 0x123);
+	ASSERT_EQ(OPCODE_X(romWord), 1);
+	ASSERT_EQ(OPCODE_Y(romWord), 2);
 }
 
 TEST_F(Chip8Test, TestSize) {

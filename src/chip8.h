@@ -33,13 +33,13 @@
 #define STATUS_PAUSED 2
 #define STATUS_ERROR 4
 
-#define OPCODE() (chip8.memory[chip8.PC] << 8) | (chip8.memory[chip8.PC + 1])
-#define OPCODE_INSTRUCTION() (chip8.opcode & 0xF000) >> 12
-#define OPCODE_X() (chip8.opcode & 0x0F00) >> 8
-#define OPCODE_Y() (chip8.opcode & 0x00F0) >> 4
-#define OPCODE_NNN() chip8.opcode & 0x0FFF
-#define OPCODE_NN() chip8.opcode & 0xFF
-#define OPCODE_N() chip8.opcode & 0xF
+#define GET_WORD() (chip8.memory[chip8.PC] << 8) | (chip8.memory[chip8.PC + 1])
+#define OPCODE_INSTRUCTION(w) (w & 0xF000) >> 8
+#define OPCODE_X(w) (w & 0x0F00) >> 8
+#define OPCODE_Y(w) (w & 0x00F0) >> 4
+#define OPCODE_NNN(w) w & 0x0FFF
+#define OPCODE_NN(w) w & 0xFF
+#define OPCODE_N(w) w & 0xF
 
 #ifdef __CC65__
 #define _OC8_FASTCALL __fastcall__
@@ -64,7 +64,6 @@ struct Chip8 {
 	uchar stackPointer;
 	uchar memory[CHIP8_MEMORY];	/* 4 KB, font located at 0x8110 */
 	
-	uchar opcode;
 	uchar key[16];
 	schar currentKey;
 	uchar screen[SCREEN_MEMORY]; /* All drawings are done in XOR mode. */

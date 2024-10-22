@@ -64,7 +64,7 @@ struct Chip8 {
 	uchar stackPointer;
 	uchar memory[CHIP8_MEMORY];	/* 4 KB, font located at 0x8110 */
 	
-	ushort opcode;
+	uchar opcode;
 	uchar key[16];
 	schar currentKey;
 	uchar screen[SCREEN_MEMORY]; /* All drawings are done in XOR mode. */

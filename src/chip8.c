@@ -169,14 +169,12 @@ void _OC8_FASTCALL doCycle() {
 		return;
 	}
 
-	chip8.opcode = OPCODE();
-	chip8.PC += 2;
-
-	x = OPCODE_X();
-	y = OPCODE_Y();
-	nnn = OPCODE_NNN();
-	nn = OPCODE_NN();
-	n = OPCODE_N();
+	chip8.opcode = chip8.memory[chip8.PC++];
+	nn = chip8.memory[chip8.PC++];
+	n = nn & 0xFF;
+	x = chip8.opcode & 0xF;
+	y = n & 0xF0 >> 4;
+	nnn = (x << 8) | nn;
 	chip8.drawFlag = 0;
 
 

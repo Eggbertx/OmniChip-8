@@ -48,7 +48,6 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 	if (initChip8() > 0) {
-		printf("ERROR: Something went wrong while loading %s\n", chip8.romPath);
 		goto finish;
 	}
 
@@ -63,7 +62,6 @@ int main(int argc, char *argv[]) {
 	}
 
 #ifdef EMSCRIPTEN_IO
-	printf("Hello, emscripten!\n");
 	emscripten_set_main_loop(runCycles, 0, 1);
 #else
 	runCycles();

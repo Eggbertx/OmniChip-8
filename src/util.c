@@ -21,12 +21,13 @@ uchar loadROM(char* file) {
 
 	rom_file = fopen(file, "rb");
 	if(!rom_file) {
-		fprintf(stderr, "Error: couldn\'t load %s\n", file);
+		perror(file);
 		return 1;
 	}
 	fseek(rom_file, 0L, SEEK_END);
 	chip8.romSize = ftell(rom_file);
 	if(chip8.romSize == 0) {
+		printf("%s: ROM file appears to be empty");
 		return 1;
 	}
 	printf("Loading %s (%d bytes)\n", file, chip8.romSize);

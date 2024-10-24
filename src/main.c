@@ -48,6 +48,10 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 	if (initChip8() > 0) {
+#ifdef __EMBED_ROM__
+		if(chip8.romSize == 0)
+			printf("Something went wrong while loading embedded CHIP-8 ROM data (ROM size is 0 bytes)");
+#endif
 		goto finish;
 	}
 

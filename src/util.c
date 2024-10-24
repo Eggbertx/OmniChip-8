@@ -16,6 +16,9 @@ uchar loadROM(char* file) {
 #ifdef __EMBED_ROM__
 	chip8.romBytes = ROM;
 	chip8.romSize = ROM_len;
+	if(chip8.romSize == 0) {
+		return 1;
+	}
 #else
 	FILE *rom_file;
 
@@ -27,7 +30,7 @@ uchar loadROM(char* file) {
 	fseek(rom_file, 0L, SEEK_END);
 	chip8.romSize = ftell(rom_file);
 	if(chip8.romSize == 0) {
-		printf("%s: ROM file appears to be empty");
+		printf("%s: ROM file appears to be empty", file);
 		return 1;
 	}
 	printf("Loading %s (%d bytes)\n", file, chip8.romSize);

@@ -21,44 +21,52 @@ unsigned int ROM_len = {};
 #endif
 """
 
-def fatal_print(msg):
-	print(msg)
-	exit(1)
+def fatal_print(msg, stderr = True, exit_code = 1):
+	if stderr:
+		print(msg, file=sys.stderr)
+	else:
+		print(msg)
+	exit(exit_code)
 
 def create_embed(path: str):
 	hex_str = ""
 	with open(path, "rb") as f:
 		bytes = f.read()
-		a = 0
 		for b in range(len(bytes)):
 			hex_str += "0x%02x" % bytes[b]
 			hex_str += ", " if b < len(bytes) - 1 else ""
-			a += 1
-			if a == 12:
+			if b % 12 == 11:
 				hex_str += "\n\t"
-				a = 0
 
 	with open("src/rom_embed.h", "wb") as r:
 		r.write(bytearray(inc_tmpl.format(hex_str, len(bytes)), "utf-8"))
 
-def fs_action(action, sourcefile, destfile = ""):
+def fs_action(action, sourcefile, destfile = "", verbose = False):
 	isfile = path.isfile(sourcefile) or path.islink(sourcefile)
 	isdir = path.isdir(sourcefile)
 	if action == "copy":
 		fs_action("delete", destfile)
+		if verbose:
+			print(f"Copying file {sourcefile}{"/" if isdir and not destfile.endswith("/") else ""} to {destfile}")
 		if isfile:
 			shutil.copy(sourcefile, destfile)
 		elif isdir:
 			shutil.copytree(sourcefile, destfile)
 	elif action == "move":
+		if verbose:
+			print(f"Moving file {sourcefile}{"/" if isdir and not destfile.endswith("/") else ""} to {destfile}")
 		fs_action("delete", destfile)
 		shutil.move(sourcefile, destfile)
 	elif action == "mkdir":
+		if verbose:
+			print(f"Creating directory {sourcefile}")
 		if isfile:
 			fs_action("delete", sourcefile)
 		elif not isdir:
 			os.makedirs(sourcefile)
 	elif action == "delete":
+		if verbose:
+			print(f"Deleting {sourcefile}")
 		if isfile:
 			os.remove(sourcefile)
 		elif isdir:
@@ -66,16 +74,16 @@ def fs_action(action, sourcefile, destfile = ""):
 	else:
 		raise Exception("Invalid action, must be 'copy', 'move', 'mkdir', or 'delete'")
 
-def run_cmd(cmd, print_output = True, realtime = False, print_command = False):
+def run_cmd(cmd, print_output = True, realtime = False, print_command = False, encoding = "utf-8", encoding_errors = "replace"):
 	if print_command:
 		print(cmd)
 
 	proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr=subprocess.STDOUT, shell = True)
 	output = ""
 	status = 0
-	if realtime: # print the command's output in real time, ignores print_output
+	if realtime and proc.stdout is not None: # print the command's output in real time, ignores print_output
 		while True:
-			realtime_output = proc.stdout.readline().decode("utf-8")
+			realtime_output = proc.stdout.readline().decode(encoding, errors=encoding_errors)
 			if realtime_output == "" and status is not None:
 				return ("", status)
 			if realtime_output:
@@ -85,7 +93,7 @@ def run_cmd(cmd, print_output = True, realtime = False, print_command = False):
 	else: # wait until the command is finished to print the output
 		output = proc.communicate()[0]
 		if output is not None:
-			output = output.decode("utf-8").strip()
+			output = output.decode(encoding, errors=encoding_errors).strip()
 		else:
 			output = ""
 		status = proc.wait()
@@ -131,7 +139,29 @@ def term_type():
 		return "cmd"
 	return "other"
 
-def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = ""):
+def make_disk(target:str, prg_file:str, rom_file:str):
+	match target:
+		case "c64":
+			disk_img = f"oc8-{target}.d64"
+			print(f"Creating disk image {disk_img} with the compiled program ROM file {rom_file}")
+
+			status = run_cmd(f"c1541 -format oc8-{target},01 d64 {disk_img}")
+			if status[1] != 0:
+				fatal_print("Failed creating disk image, see command output for details")
+			
+			prg_noext = path.splitext(path.basename(prg_file))[0].lower()
+			status = run_cmd(f"c1541 {disk_img} -write {prg_file} {prg_noext}", print_output=True, realtime=True, print_command=True)
+			if status[1] != 0:
+				fatal_print(f"Failed writing {prg_file} to disk image, see command output for details")
+
+			status = run_cmd(f"c1541 {disk_img} -write {rom_file} {path.basename(rom_file).lower()}", print_output=True, realtime=True, print_command=True)
+			if status[1] != 0:
+				fatal_print(f"Failed writing {rom_file} to disk image, see command output for details")
+			print(f"Disk image {disk_img} created successfully")
+		case _:
+			fatal_print(f"Disk creation is only supported for the c64 target, got {target}")
+
+def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = "", embed_disk = False):
 	if embed != "":
 		create_embed(embed)
 	term = term_type()
@@ -149,6 +179,12 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 
 	cmd = ""
 	sources = "src/util.c src/opcode_funcs.c src/chip8.c src/main.c"
+
+	if embed_disk:
+		if platform != "c64":
+			fatal_print("disk writing is only supported for the Commodore 64 platform")
+		elif embed == "":
+			fatal_print("You must specify a ROM file to embed in the disk image with --embed")
 
 	if msbuild:
 		# Visual Studio development console is being used
@@ -173,54 +209,35 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		elif library == "sdl":
 			includes_path += "/SDL2"
 
-		sources += " src/io_{}.c".format(library)
+		sources += f" src/io_{library}.c"
 
 		cflags = "-pedantic -Wall -std=c89 -D_POSIX_SOURCE -fdiagnostics-color=always "
-		cmd = "cc -o {oc8_out} -D{io_const}_IO {includes_path} {debug_flag} {debug_keys} {cflags} {sources} {lib}".format(
-			oc8_out = oc8_out,
-			io_const = library.upper(),
-			includes_path = "-I" + includes_path,
-			debug_flag = "-g" if debugging else "",
-			debug_keys = "-DDEBUG_KEYS" if debug_keys else "",
-			cflags = cflags,
-			sources = sources,
-			lib = lib
-		)
+		debug_flag = "-g" if debugging else ""
+		debug_keys = "-DDEBUG_KEYS" if debug_keys else ""
+		cmd = f"cc -o {oc8_out} -D{library.upper()}_IO -I{includes_path} {debug_flag} {debug_keys} {cflags} {sources} {lib}"
 	elif platform in ("c64", "sim6502"):
 		if not in_pathenv("cl65"):
 			fatal_print("Unable to find the cc65 development kit, required to build for 65xx targets")
-		sources += " src/io_{}.c".format(platform)
+		sources += f" src/io_{platform}.c"
 		if platform == "sim6502":
 			sources += " asm/sim6502_time.s"
 
-		cmd = "cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} -Cl {listing} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
-			debug_flag = "-g -Ln oc8.lbl" if debugging else "",
-			oc8_out = oc8_out,
-			platform = platform,
-			listing = ("-l " + listing_file) if listing_file != "" else "",
-			io_const = platform.upper(),
-			sources = sources
-		)
+		debug_flag = "-g" if debugging else ""
+		listing = f"-l {listing_file}" if listing_file != "" else ""
+		cmd = f"cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} -Cl {listing} -D{platform.upper()}_IO"
+		cmd += f" -D__ROM_FILE__=\"{embed}\" {sources}" if embed_disk else f" -D__EMBED_ROM__ {sources}"
 	elif platform in ("gb", "ti83", "ti83"):
 		if not in_pathenv("zcc"):
 			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
 		io_const = platform.upper()
 
-		sources += " src/io_{}.c".format(platform)
-		cmd = "zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}".format(
-			platform = platform,
-			oc8_out = oc8_out,
-			io_const = io_const,
-			sources = sources
-		)
+		sources += f" src/io_{platform}.c"
+		cmd = f"zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}"
 	elif platform == "emscripten":
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")
-		sources += " src/io_{}.c".format("sdl")
-		cmd = "emcc -o {oc8_out} -s USE_SDL=2 --shell-file shell.html -DSDL_IO -D__EMBED_ROM__ -DEMSCRIPTEN_IO {sources}".format(
-			oc8_out = oc8_out,
-			sources = sources
-		)
+		sources += " src/io_sdl.c"
+		cmd = f"emcc -o {oc8_out} -s USE_SDL=2 --shell-file shell.html -DSDL_IO -D__EMBED_ROM__ -DEMSCRIPTEN_IO {sources}"
 	else:
 		fatal_print("Unsupported platform " + platform)
 
@@ -234,6 +251,9 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		fs_action("copy", path.join(out_dir, "oc8.exe"), "oc8.exe")
 		
 	print("Built OmniChip-8 successfully")
+
+	if embed_disk:
+		make_disk(platform, oc8_out, embed)
 
 def run_tests(coverage = True):
 	test_commands = [
@@ -252,7 +272,7 @@ def run_tests(coverage = True):
 
 def clean():
 	print("Cleaning up")
-	fs_action("delete", "build/")
+	fs_action("delete", "build/", verbose=True)
 	del_files = glob.glob("oc8*") + glob.glob("src/*.o") + ["zcc_opt.def", "SDL2.dll", "src/rom_embed.h", "x64", "packages", "build", "Testing"]
 	for del_file in del_files:
 		fs_action("delete", del_file)
@@ -289,6 +309,13 @@ if __name__ == "__main__":
 		elif action == "emscripten":
 			platform = "emscripten"
 			library = "sdl"
+		elif action == "c64":
+			parser.add_argument("-d", "--disk",
+				help="If set, create a disk image with the compiled program ROM file specified by --embed instead of storing it in the PRG file",
+				default=False,
+				action="store_true")
+			platform = "c64"
+			library = ""
 		else:
 			platform = action
 			library = ""
@@ -311,6 +338,7 @@ if __name__ == "__main__":
 			args.__dict__.get("debug_symbols", False),
 			args.__dict__.get("debug_keys", False),
 			args.__dict__.get("embed", "games/omnichip8"),
-			args.__dict__.get("listing_file", ""))
+			args.__dict__.get("listing_file", ""),
+			args.__dict__.get("disk", False))
 	else:
 		fatal_print(f"Unrecognized action {action}, recognized actions: {', '.join(actions)}")

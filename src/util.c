@@ -1,50 +1,61 @@
 #include <stdarg.h>
 #ifdef __CC65__
 	#include <conio.h>
-#else
-	#include <stdio.h>
-	#include <stdlib.h>
 #endif
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 #ifdef __EMBED_ROM__
-#include "rom_embed.h"
+	#include "rom_embed.h"
 #endif
 
+/* to be used since CC65 doesn't have lseek, required by fseek and ftell, for most platforms */
+#define BUFFER_SIZE 256
+
 uchar loadROM(char* file) {
-	ushort i = 0;
 #ifdef __EMBED_ROM__
-	chip8.romBytes = ROM;
+	memcpy(chip8.memory + ROM_START_ADDR, ROM, ROM_len);
 	chip8.romSize = ROM_len;
 	if(chip8.romSize == 0) {
 		return 1;
 	}
 #else
-	FILE *rom_file;
+	FILE *romFile;
+	ushort bufferRead = 0;
 
-	rom_file = fopen(file, "rb");
-	if(!rom_file) {
+	romFile = fopen(file, "rb");
+	if(!romFile) {
 		perror(file);
 		return 1;
 	}
-	fseek(rom_file, 0L, SEEK_END);
-	chip8.romSize = ftell(rom_file);
-	if(chip8.romSize == 0) {
-		printf("%s: ROM file appears to be empty", file);
-		return 1;
-	}
-	printf("Loading %s (%d bytes)\n", file, chip8.romSize);
-	rewind(rom_file);
+	#ifdef __CC65__
+		chip8.romSize = 0;
+		do {
+			bufferRead = fread(chip8.memory + bufferRead, 1, BUFFER_SIZE, romFile);
+			chip8.romSize += bufferRead;
+		} while (bufferRead > 0);
+		if(chip8.romSize == 0) {
+			printf("%s: ROM file appears to be empty", file);
+			fclose(romFile);
+			return 1;
+		}
+	#else
+		fseek(romFile, 0L, SEEK_END);
+		chip8.romSize = ftell(romFile);
+		if(chip8.romSize == 0) {
+			printf("%s: ROM file appears to be empty", file);
+			fclose(romFile);
+			return 1;
+		}
+		printf("Loading %s (%d bytes)\n", file, chip8.romSize);
+		rewind(romFile);
 
-	chip8.romBytes = (uchar *)malloc(chip8.romSize+1);
-	fread(chip8.romBytes, 1, chip8.romSize,rom_file);
-	fclose(rom_file);
+		fread(chip8.memory + ROM_START_ADDR, 1, chip8.romSize, romFile);
+	#endif
+	fclose(romFile);
 #endif
-	for(i = 0; i < 80; i++) {
-		chip8.memory[FONT_START_ADDR + i] = font[i];
-	}
-	for(i = 0; i < chip8.romSize; i++) {
-		chip8.memory[ROM_START_ADDR + i] = chip8.romBytes[i];
-	}
+	memcpy(chip8.memory + FONT_START_ADDR, font, 80);
 	return 0;
 }

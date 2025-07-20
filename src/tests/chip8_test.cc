@@ -27,12 +27,9 @@ class Chip8Test : public ::testing::Test {
 		template <ushort S>
 		void loadROM(const char* mockFilepath, uchar (&romBytes)[S]) {
 			chip8.romPath = (char*)mockFilepath;
-			chip8.romBytes = romBytes;
 			chip8.romSize = sizeof(romBytes)/sizeof(romBytes[0]);
 			printf("Loading %s (%d bytes)\n", mockFilepath, chip8.romSize);
-			for(int i = 0; i < chip8.romSize; i++) {
-				chip8.memory[ROM_START_ADDR + i] = chip8.romBytes[i];
-			}
+			memcpy(chip8.memory + ROM_START_ADDR, romBytes, chip8.romSize);
 		}
 
 		bool isScreenBlank() {

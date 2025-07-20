@@ -50,7 +50,6 @@
 struct Chip8 {
 	uchar status;
 	char* romPath;
-	uchar* romBytes;
 	ushort romSize;
 	uchar V[16];		/* registers: VF is used as carry for arithmetic and sprite collisions */
 	ushort PC;

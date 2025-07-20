@@ -43,8 +43,18 @@ int main(int argc, char *argv[]) {
 	if(argc == 2) {
 		chip8.romPath = argv[1];
 	} else {
-		printf("usage: %s path/to/rom\n", argv[0]);
-		return 1;
+		char path[256];
+		printf("Enter path to ROM: ");
+		if(fgets(path, sizeof(path), stdin) != NULL) {
+			size_t len = strlen(path);
+			if(len > 0 && path[len - 1] == '\n') {
+				path[len - 1] = '\0';
+			}
+			chip8.romPath = path;
+		} else {
+			printf("ERROR: Unable to read ROM path from stdin.\n");
+			return 1;
+		}
 	}
 #endif
 	if (initChip8() > 0) {

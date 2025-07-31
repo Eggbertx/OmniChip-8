@@ -3,8 +3,6 @@
 #include "io.h"
 #include "chip8.h"
 
-#define __EMBED_ROM__ 1
-
 uchar getEvent(void) {
 	return 0;
 }

@@ -9,6 +9,15 @@
 #include "io.h"
 #include "util.h"
 
+
+#ifndef EMBED_ROM
+#ifdef C64_IO
+#define MAX_FILENAME_LENGTH 16
+#else
+#define MAX_FILENAME_LENGTH 256
+#endif
+#endif
+
 static void runCycles() {
 	uchar event = EVENT_NULL;
 	#ifndef EMSCRIPTEN_IO
@@ -39,11 +48,11 @@ static void runCycles() {
 }
 
 int main(int argc, char *argv[]) {
-#ifndef __EMBED_ROM__
+#ifndef EMBED_ROM
 	if(argc == 2) {
 		chip8.romPath = argv[1];
 	} else {
-		char path[256];
+		char path[MAX_FILENAME_LENGTH];
 		printf("Enter path to ROM: ");
 		if(fgets(path, sizeof(path), stdin) != NULL) {
 			size_t len = strlen(path);
@@ -58,11 +67,10 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 	if (initChip8() > 0) {
-#ifdef __EMBED_ROM__
-		if(chip8.romSize == 0)
-			printf("Something went wrong while loading embedded CHIP-8 ROM data (ROM size is 0 bytes)");
-#endif
-		goto finish;
+	#if defined(C64_IO) || defined(GB_IO) || defined(TI83_IO)
+		while(1){}
+	#endif
+		return 1;
 	}
 
 	if(initScreen() > 0) {

@@ -12,7 +12,7 @@ import sys
 
 inc_tmpl = """#ifndef ROM_EMBED_H
 #define ROM_EMBED_H
-#ifdef __EMBED_ROM__
+#ifdef EMBED_ROM
 unsigned char ROM[] = {{
 	{}
 }};
@@ -161,8 +161,9 @@ def make_disk(target:str, prg_file:str, rom_file:str):
 		case _:
 			fatal_print(f"Disk creation is only supported for the c64 target, got {target}")
 
-def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = "", embed_disk = False):
-	if embed != "":
+def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = "", rom_on_disk = False):
+	embed_disk = embed != "" and rom_on_disk
+	if embed != "" and not rom_on_disk:
 		create_embed(embed)
 	term = term_type()
 	msbuild = term == "msbuild" and platform == "native"
@@ -180,7 +181,7 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 	cmd = ""
 	sources = "src/util.c src/opcode_funcs.c src/chip8.c src/main.c"
 
-	if embed_disk:
+	if rom_on_disk:
 		if platform != "c64":
 			fatal_print("disk writing is only supported for the Commodore 64 platform")
 		elif embed == "":
@@ -225,19 +226,19 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		debug_flag = "-g" if debugging else ""
 		listing = f"-l {listing_file}" if listing_file != "" else ""
 		cmd = f"cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} -Cl {listing} -D{platform.upper()}_IO"
-		cmd += f" -D__ROM_FILE__=\"{embed}\" {sources}" if embed_disk else f" -D__EMBED_ROM__ {sources}"
+		cmd += f" -DEMBED_ROM=\"{embed}\" {sources}" if not embed_disk else f" {sources}"
 	elif platform in ("gb", "ti83", "ti83"):
 		if not in_pathenv("zcc"):
 			fatal_print("Unable to find the z88dk development kit, required to build for GameBoy and TI-8x")
 		io_const = platform.upper()
 
 		sources += f" src/io_{platform}.c"
-		cmd = f"zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -D__EMBED_ROM__ {sources}"
+		cmd = f"zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -DEMBED_ROM {sources}"
 	elif platform == "emscripten":
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")
 		sources += " src/io_sdl.c"
-		cmd = f"emcc -o {oc8_out} -s USE_SDL=2 --shell-file shell.html -DSDL_IO -D__EMBED_ROM__ -DEMSCRIPTEN_IO {sources}"
+		cmd = f"emcc -o {oc8_out} -s USE_SDL=2 --shell-file shell.html -DSDL_IO -DEMBED_ROM={embed} -DEMSCRIPTEN_IO {sources}"
 	else:
 		fatal_print("Unsupported platform " + platform)
 
@@ -252,7 +253,7 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		
 	print("Built OmniChip-8 successfully")
 
-	if embed_disk:
+	if rom_on_disk:
 		make_disk(platform, oc8_out, embed)
 
 def run_tests(coverage = True):
@@ -333,7 +334,6 @@ if __name__ == "__main__":
 			default="games/omnichip8")
 		args = parser.parse_args()
 
-		create_embed(args.embed)
 		build(platform, library,
 			args.__dict__.get("debug_symbols", False),
 			args.__dict__.get("debug_keys", False),

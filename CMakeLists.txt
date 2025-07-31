@@ -38,7 +38,7 @@ add_custom_target(lcov
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
-add_custom_command(TARGET lcov
+add_custom_command(TARGET lcov POST_BUILD
 	COMMAND lcov  --ignore-errors inconsistent,mismatch,unused -d ${OBJECT_DIR} -c -o ${CMAKE_BINARY_DIR}/lcov/coverage.info -rc lcov_branch_coverage=1
 	COMMAND lcov --ignore-errors inconsistent,unused -r ${CMAKE_BINARY_DIR}/lcov/coverage.info "/usr/include/*" "${CMAKE_BINARY_DIR}/_deps/*" -o ${CMAKE_BINARY_DIR}/lcov/coverage.info
 	COMMAND genhtml ${CMAKE_BINARY_DIR}/lcov/coverage.info --branch-coverage --output-directory ${CMAKE_BINARY_DIR}/lcov/html

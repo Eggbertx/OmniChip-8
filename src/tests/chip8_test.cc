@@ -8,7 +8,7 @@ extern "C" {
 #endif
 #include "testing_roms.h"
 
-#define __EMBED_ROM__ 1
+#define EMBED_ROM 1
 
 namespace {
 class Chip8Test : public ::testing::Test {

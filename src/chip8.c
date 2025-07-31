@@ -58,8 +58,14 @@ void resetChip8() {
 }
 
 uchar initChip8() {
+	uchar result;
 	resetChip8();
-	return loadROM(chip8.romPath);
+	result = loadROM(chip8.romPath);
+	if(result == 0 && chip8.romSize == 0) {
+		printf("ERROR: Something went wrong while loading CHIP-8 ROM data (ROM size is 0 bytes)");
+		result = 1;
+	}
+	return result;
 }
 
 void _OC8_FASTCALL drawScreen() {

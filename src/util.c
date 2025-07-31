@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "util.h"
-#ifdef __EMBED_ROM__
+#ifdef EMBED_ROM
 	#include "rom_embed.h"
 #endif
 
@@ -15,7 +15,7 @@
 #define BUFFER_SIZE 256
 
 uchar loadROM(char* file) {
-#ifdef __EMBED_ROM__
+#ifdef EMBED_ROM
 	memcpy(chip8.memory + ROM_START_ADDR, ROM, ROM_len);
 	chip8.romSize = ROM_len;
 	if(chip8.romSize == 0) {
@@ -33,7 +33,7 @@ uchar loadROM(char* file) {
 	#ifdef __CC65__
 		chip8.romSize = 0;
 		do {
-			bufferRead = fread(chip8.memory + bufferRead, 1, BUFFER_SIZE, romFile);
+			bufferRead = fread(chip8.memory + ROM_START_ADDR + bufferRead, 1, BUFFER_SIZE, romFile);
 			chip8.romSize += bufferRead;
 		} while (bufferRead > 0);
 		if(chip8.romSize == 0) {

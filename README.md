@@ -31,13 +31,17 @@ Run `python make.py curses`
 
 ## Commodore 64 (requires cc65)
 Run `python make.py c64`
+To choose a specific game run `python make.py c64 --embed <path>`.
+To build a .d64 disk image, run `python make.py c64 -d` or `python make.py c64 --disk --embed <path>`. You can use a disk editor like V1541Commander to add other CHIP-8 games to the disk image.
+
+If the disk flag is set, OmniChip-8 will ask for the game name to run when it starts. Otherwise, it will embed the game specified by the `--embed` flag, or default to `games/omnichip8`.
 
 ### Screenshot
 ![Commodore 64 screenshot](./screenshots/c64.png)
 
 
 ## GameBoy (requires z88dk)
-Run `python make.py gb`
+Run `python make.py gb`. To choose a specific game run `python make.py gb --embed <path>`.
 
 ### Screenshot
 ![GameBoy screenshot](./screenshots/gb.png)

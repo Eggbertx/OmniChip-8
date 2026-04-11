@@ -38,7 +38,9 @@ static void runCycles() {
 			#endif
 		}
 
+		DEBUG_DRAW1();
 		doCycle();
+		DEBUG_DRAW2();
 		if(chip8.drawFlag == 1) {
 			drawScreen();
 		}

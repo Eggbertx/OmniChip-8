@@ -33,6 +33,24 @@
 	#define KEY_ESCAPE 27
 #endif
 
+
+/* if set, causes the screen to flash before and after execution to see how long execution takes compared to drawing */
+#ifdef DEBUG_DRAWS
+	#if defined(C64_IO)
+		#define DEBUG_DRAW1() *(uchar*)0xD020 = 2
+		#define DEBUG_DRAW2() *(uchar*)0xD020 = 6
+	#elif defined(GB_IO)
+		#include <gb/gb.h>
+		#define DEBUG_DRAW1() BGP_REG = 0xE4
+		#define DEBUG_DRAW2() BGP_REG = 0x1B
+	#endif
+#else
+	/* dummy/no-op */
+	#define DEBUG_DRAW1()
+	#define DEBUG_DRAW2()
+#endif
+
+
 uchar getEvent(void);
 
 uchar getKey(void);

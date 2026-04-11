@@ -36,14 +36,11 @@ uchar initAudio(void) {
 }
 
 void drawPixel(uchar x, uchar y) {
-	int cY;
+	uchar mX = x * PIXEL_SCALE + OFFSET_X;
+	uchar mY = y * PIXEL_SCALE + OFFSET_Y;
+	uchar cY;
 	for(cY = 0; cY < PIXEL_SCALE; cY++) {
-		line(
-			x*PIXEL_SCALE + OFFSET_X,
-			y*PIXEL_SCALE+cY + OFFSET_Y,
-			x*PIXEL_SCALE+PIXEL_SCALE + OFFSET_X,
-			y*PIXEL_SCALE+cY + OFFSET_Y
-		);
+		line(mX, mY + cY, mX+PIXEL_SCALE, mY+cY);
 	}
 }
 

@@ -161,7 +161,7 @@ def make_disk(target:str, prg_file:str, rom_file:str):
 		case _:
 			fatal_print(f"Disk creation is only supported for the c64 target, got {target}")
 
-def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = "", rom_on_disk = False):
+def build(platform = "native", library = "sdl", debugging = False, debug_keys=False, embed = "", listing_file = "", rom_on_disk = False, debug_draws = False):
 	embed_disk = embed != "" and rom_on_disk
 	if embed != "" and not rom_on_disk:
 		create_embed(embed)
@@ -225,7 +225,7 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 
 		debug_flag = "-g" if debugging else ""
 		listing = f"-l {listing_file}" if listing_file != "" else ""
-		cmd = f"cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} -Cl {listing} -D{platform.upper()}_IO"
+		cmd = f"cl65 -Osir {debug_flag} -o {oc8_out} -t {platform} -Cl {listing} {'-DDEBUG_DRAWS' if debug_draws else ''} -D{platform.upper()}_IO"
 		cmd += f" -DEMBED_ROM=\"{embed}\" {sources}" if not embed_disk else f" {sources}"
 	elif platform in ("gb", "ti83", "ti83"):
 		if not in_pathenv("zcc"):
@@ -233,7 +233,7 @@ def build(platform = "native", library = "sdl", debugging = False, debug_keys=Fa
 		io_const = platform.upper()
 
 		sources += f" src/io_{platform}.c"
-		cmd = f"zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO -DEMBED_ROM {sources}"
+		cmd = f"zcc +{platform} --opt-code-speed -create-app -o {oc8_out} -D{io_const}_IO {'-DDEBUG_DRAWS' if debug_draws else ''} -DEMBED_ROM {sources}"
 	elif platform == "emscripten":
 		if not in_pathenv("emcc"):
 			fatal_print("Unable to find the emscripten development kit, required to build browser-compatible JavaScript")
@@ -325,6 +325,10 @@ if __name__ == "__main__":
 				help="Generate listing file",
 				default="",
 				metavar="PATH")
+			parser.add_argument("--debug-draws",
+				help="Enable a quick operation to change the screen color before and after execution is done for debugging speed issues",
+				default=False,
+				action="store_true")
 		parser.add_argument("-g", "--debug-symbols",
 			help="Build OmniChip-8 with debugging symbols",
 			default=False,
@@ -339,6 +343,7 @@ if __name__ == "__main__":
 			args.__dict__.get("debug_keys", False),
 			args.__dict__.get("embed", "games/omnichip8"),
 			args.__dict__.get("listing_file", ""),
-			args.__dict__.get("disk", False))
+			args.__dict__.get("disk", False),
+			args.__dict__.get("debug_draws", False))
 	else:
 		fatal_print(f"Unrecognized action {action}, recognized actions: {', '.join(actions)}")
